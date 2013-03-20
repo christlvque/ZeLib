@@ -15,6 +15,36 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+	Bibliothèque JS pour certaines fonctions de base
+	
+	* Tableaux HTML :
+		- Creation à partir d'un tableau JS (Array) //TODO : make tableSorter2 optional
+		- Charge un tableau HTML dans un Array
+	* URLs :
+		- Récupère les paramètres par id
+		- Redirection JS
+	* Graphiques :
+		- Pareto
+		- répartition temporelle
+		- Répartions de valeurs
+	* Dates
+		- converti une date au format "JJ/MM/AAAA" en date JS			//TODO : Group functions
+		- converti une date au format "JJ/MM/AAAA HH:MM:SS" en date JS	//
+		- Calcul de différence entre deux dates en jours, semaines, mois, années
+		- Ajoute un intervalle de temps à une date
+	* Tableaux JS
+		- Tri sur une dimension
+	* Ajax
+		- Renvoie un tableau JS d'une requete ajax //TODO : Add options
+		- Ajoute la possibilité de rendre les requêtes ajax synchrone (.queue) //TODO : Add clear queue option
+		
+		
+	Requiert :
+		- jQuery 1.8.0+ (http://jquery.com) [ jQuery ;) ]	//TODO : Remove jQuery references
+		- Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
+		[ should be optional: - TableSorter 2.0 (http://tablesorter.com) - jQuery plugin ]
+ */
 
 (function () {
     var ajaxQueue = jQuery({});
@@ -151,18 +181,6 @@
                             return "";
                         else
                             return decodeURIComponent(results[1].replace(/\+/g, " "));
-                    },
-
-                    dateD: function () {
-                        var d = this.byName(URL_PAR.DATE_DEBUT)
-                        if (d != '' && d != '') { d = d.substring(0, 2) + '/' + d.substring(2, 4) + '/' + d.substring(4, 10); } else { return false; }
-                        return d;
-                    },
-
-                    dateF: function () {
-                        var d = $g.url.get.param.byName(URL_PAR.DATE_FIN)
-                        if (d != '' && d != '') { d = d.substring(0, 2) + '/' + d.substring(2, 4) + '/' + d.substring(4, 10); } else { return false; }
-                        return d;
                     }
                 }
             },
@@ -173,47 +191,6 @@
                 if (lang == undefined) { lang = 'fr'; }
 
                 window.location.href = thePage + '#/' + lang;
-            }
-        },
-
-        /* Fonctions Homepage */
-        home: {
-            go: {
-                suivi_mesures: function () {
-                    if (verifieDate() == false) { return false; }
-
-                    saveInitPeriode();
-                    setTimeout(ouvrirOverlay, 1);
-
-                    redirect(
-						AddParamUrl(
-							'p/repMesures.aspx',
-							document.getElementById('txtDateDebut').value,
-							document.getElementById('txtDateFin').value,
-							'', '', '', '', '', '', '', ''
-						)
-					);
-                },
-
-                suivi_mesure_v2: function () {
-                    if (verifieDate() == false) { return false; }
-
-                    saveInitPeriode();
-                    setTimeout(ouvrirOverlay, 1);
-
-                    redirect(
-						AddParamUrl(
-							'p/suivi_mesures.aspx',
-							document.getElementById('txtDateDebut').value,
-							document.getElementById('txtDateFin').value,
-							'', '', '', '', '', '', '', ''
-						)
-					);
-                },
-
-                gest_postes: function () {
-                    redirect('p/gest_postes.aspx');
-                }
             }
         },
 
@@ -354,7 +331,7 @@
                 }
             },
 			
-			/* Graph de répartion des mesures */
+			/* Graph de répartion de valeurs */
             repart: {
                 opt: {
                     bars: {
@@ -506,16 +483,9 @@
             },
             dateAddExtention: function (p_Interval, p_Number) {
                 var thing = new String();
-
-
-                //in the spirt of VB we'll make this function non-case sensitive 
-                //and convert the charcters for the coder. 
                 p_Interval = p_Interval.toLowerCase();
 
                 if (isNaN(p_Number)) {
-
-                    //Only accpets numbers 
-                    //throws an error so that the coder can see why he effed up     
                     throw "The second parameter must be a number. \n You passed: " + p_Number;
                     return false;
                 }
@@ -571,9 +541,8 @@
                         }
                     default:
                         {
-
-                            //throws an error so that the coder can see why he effed up and 
-                            //a list of elegible letters. 
+						//throws an error so that the coder can see why he effed up and 
+						//a list of elegible letters. 
                             throw "The first parameter must be a string from this list: \n" +
 								"yyyy, q, m, y, d, w, ww, h, n, s, or ms. You passed: " + p_Interval;
                             return false;
@@ -609,9 +578,7 @@
                 var oldComplete = ajaxOpts.complete;
                 ajaxQueue.queue(function (next) {
                     ajaxOpts.complete = function () {
-                        if (oldComplete) {
-                            oldComplete.apply(this, arguments);
-                        }
+                        if (oldComplete) {oldComplete.apply(this, arguments);}
                         next();
                     };
 
@@ -622,7 +589,7 @@
         }
     }
 
-    Date.prototype.dateAdd = _lib.dates.dateAddExtention;
+    Date.prototype.dateAdd = _ZeLib.dates.dateAddExtention;
 
     if (!window.z) { window.z = _ZeLib; }
 
