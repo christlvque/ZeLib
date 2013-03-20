@@ -1,4 +1,22 @@
-﻿(function () {
+﻿/*
+	Copyright (C) 2013 Liorzou Etienne
+	
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+(function () {
     var ajaxQueue = jQuery({});
 
     var _ZeLib = {
@@ -6,20 +24,20 @@
         tableau: {
             /* Lit le tableau HTML */
             read: function (idTab) {
-                var $table = $j('#' + idTab),
+                var $table = jQuery('#' + idTab),
 					$headerCells = $table.find("thead th"),
 					$rows = $table.find("tbody tr"),
 					headers = [],
 					rows = [];
 
                 $headerCells.each(function (k, v) {
-                    headers[headers.length] = $j(this).text();
+                    headers[headers.length] = jQuery(this).text();
                 });
 
                 $rows.each(function (row, v) {
-                    $j(this).find("td").each(function (cell, v) {
+                    jQuery(this).find("td").each(function (cell, v) {
                         if (typeof rows[row] === 'undefined') rows[row] = [];
-                        rows[row][cell] = $j(this).text();
+                        rows[row][cell] = jQuery(this).text();
                     });
                 });
 
@@ -31,7 +49,7 @@
                 var i = 0,
 					j = 0;
 
-                var container = $j('#' + cID),
+                var container = jQuery('#' + cID),
 					tHeader = undefined, /* Textes des en-têtes */
 					tClass = '', /* Classes CSS du tableau */
 					table, /* tableau HTML */
@@ -54,20 +72,20 @@
                 container.html('');
 
                 /* Détermine si 'tID' est déjà utilisé */
-                if ($j('#' + tID).length > 0) {
+                if (jQuery('#' + tID).length > 0) {
                     alert('l\'ID utilisé pour le tableau existe déjà !');
                     return false;
                 }
 
                 /* Détermine si 'tArray' est un tableau javascript */
-                if ($j.isArray(tArray) == false) {
+                if (jQuery.isArray(tArray) == false) {
                     alert('le parametre n\'est pas un tableau !');
                     return false;
                 }
 
                 /* Determine si un tableau d'en-tete est passé en parametre */
                 if (tHeader) {
-                    if ($j.isArray(tHeader) == false) {
+                    if (jQuery.isArray(tHeader) == false) {
                         alert('le parametre d\'en-tete n\'est pas un tableau !');
                         return false;
                     }
@@ -75,7 +93,7 @@
 
                 /* Défini la table */
                 container.append('<table id="' + tID + '"></table>');
-                table = $j('#' + tID);
+                table = jQuery('#' + tID);
 
                 /* Si tHeader est défini */
                 if (tHeader != undefined) {
@@ -98,7 +116,7 @@
 
                 for (i = 0; i < tArray.length; i++) {
                     tbBody.append('<tr></tr>');
-                    tbTR = $j(tbBody.children('tr')[i]);
+                    tbTR = jQuery(tbBody.children('tr')[i]);
 
                     for (j = 0; j < tArray[i].length; j++) {
                         tbTR.append('<td>' + tArray[i][j] + '</td>');
