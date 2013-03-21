@@ -20,14 +20,15 @@
 	Required :
 	- jQuery 1.8.0+ (http://jquery.com) [ jQuery ;) ]	//TODO : Remove jQuery references
 	- Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
-	[ should be optional: - TableSorter 2.0 (http://tablesorter.com) - jQuery plugin ]
+	[ should be optional but recommended : - TableSorter 2.0 (http://tablesorter.com), a jQuery plugin ]
 	
 	-------------
 	
 	Releases :
 	
     v. 1.0-a    : first release
-	v. 1.0-b	: added 'fn' and 'math'
+	v. 1.0-b.0	: added 'fn' and 'math'
+	v. 1.0-b.1	: added jQuery, Flotr and tablesorter detection - just throw error, nothing else !
 	
 	-------------
 	
@@ -49,6 +50,7 @@
 		- Pareto
 		- répartition temporelle
 			//TODO : fix xaxis -> show date-time values
+			//TODO : fix negatives values (bug ???)
 		- Répartions de valeurs
 			//TODO : fix bug when multiple redraw
 			//TODO : add option to draw vertical line
@@ -103,8 +105,12 @@
 
 
 (function () {
+	if (jQuery == undefined) { throw 'jQuery was not detected !'; }
+	if (Flotr == undefined) { throw 'Flotr2 was not dectected !'; }
+	if (jQuery.tablesorter == undefined) { console.log('jQuery plugin \'tablesorter\' was not detected !'); }
+	
     var ajaxQueue = jQuery({});
-
+		
     var _ZeLib = {};
 		
 	_ZeLib.tableau = {
