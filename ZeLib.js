@@ -15,11 +15,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+/*
+	Required :
+	- jQuery 1.8.0+ (http://jquery.com) [ jQuery ;) ]	//TODO : Remove jQuery references
+	- Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
+	[ should be optional: - TableSorter 2.0 (http://tablesorter.com) - jQuery plugin ]
+	
+	-------------
+	
+	Releases :
+	
+    v. 1.0-a    : first release
+	v. 1.0-b	: added 'fn' and 'math'
+	
+	-------------
+	
+	
+*/
+
+ 
 /*
 	Bibliothèque JS pour certaines fonctions de base
 	
 	* Tableaux HTML :
-		- Creation à partir d'un tableau JS (Array) //TODO : make tableSorter2 optional
+		- Creation à partir d'un tableau JS (Array)
+			//TODO : make tableSorter2 optional
 		- Charge un tableau HTML dans un Array
 	* URLs :
 		- Récupère les paramètres par id
@@ -27,175 +48,589 @@
 	* Graphiques :
 		- Pareto
 		- répartition temporelle
+			//TODO : fix xaxis -> show date-time values
 		- Répartions de valeurs
+			//TODO : fix bug when multiple redraw
+			//TODO : add option to draw vertical line
 	* Dates
+		- Converti une date au format "JJMMAAAA" en date JS				//
 		- converti une date au format "JJ/MM/AAAA" en date JS			//TODO : Group functions
 		- converti une date au format "JJ/MM/AAAA HH:MM:SS" en date JS	//
 		- Calcul de différence entre deux dates en jours, semaines, mois, années
 		- Ajoute un intervalle de temps à une date
 	* Tableaux JS
 		- Tri sur une dimension
+	* Chaines
+	    - Ajoute l'equivalent de la fonction VB 'Trim'
 	* Ajax
-		- Renvoie un tableau JS d'une requete ajax //TODO : Add options
-		- Ajoute la possibilité de rendre les requêtes ajax synchrone (.queue) //TODO : Add clear queue option
-		
-		
-	Requiert :
-		- jQuery 1.8.0+ (http://jquery.com) [ jQuery ;) ]	//TODO : Remove jQuery references
-		- Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
-		[ should be optional: - TableSorter 2.0 (http://tablesorter.com) - jQuery plugin ]
+		- Renvoie un tableau JS d'une requete ajax
+			//TODO : Add options
+		- Ajoute la possibilité de rendre les requêtes ajax synchrone (.queue)
+			//TODO : Add clear queue option
+	* Fonctions
+		- type
+		- isArray
+		- isNumeric
+		- isSerie
+		- getDimOfArray
+		- roundNumber
+		- isPair
+		- noDoublons
+		- inArray
+		- alert
+		- error
+			//TODO: improve error tracking
+	* Maths
+		- loiNormale
+		- min
+		- max
+		- moyenne
+		- medianne
+		- variance
+		- ecartType
+		- variance_percent
+		- cpk
+		- LCI
+		- LCS
+		- isNormal
+			//TODO: investigate about random false results
+			
+			
+	//GLOBAL TODO
+		- improve documentation & comments !!
  */
+ 
+
 
 (function () {
     var ajaxQueue = jQuery({});
 
-    var _ZeLib = {
-        /* Opérations sur les tableaux */
-        tableau: {
-            /* Lit le tableau HTML */
-            read: function (idTab) {
-                var $table = jQuery('#' + idTab),
-					$headerCells = $table.find("thead th"),
-					$rows = $table.find("tbody tr"),
-					headers = [],
-					rows = [];
+    var _ZeLib = {};
+		
+	_ZeLib.tableau = {
+		/* Lit le tableau HTML */
+		read: function (idTab) {
+			var $table = jQuery('#' + idTab),
+				$headerCells = $table.find("thead th"),
+				$rows = $table.find("tbody tr"),
+				headers = [],
+				rows = [];
 
-                $headerCells.each(function (k, v) {
-                    headers[headers.length] = jQuery(this).text();
-                });
+			$headerCells.each(function (k, v) {
+				headers[headers.length] = jQuery(this).text();
+			});
 
-                $rows.each(function (row, v) {
-                    jQuery(this).find("td").each(function (cell, v) {
-                        if (typeof rows[row] === 'undefined') rows[row] = [];
-                        rows[row][cell] = jQuery(this).text();
-                    });
-                });
+			$rows.each(function (row, v) {
+				jQuery(this).find("td").each(function (cell, v) {
+					if (typeof rows[row] === 'undefined') rows[row] = [];
+					rows[row][cell] = jQuery(this).text();
+				});
+			});
 
-                return rows;
-            },
+			return rows;
+		},
 
-            /* Génère un tableau HTML */
-            write: function (tID, cID, tArray /* , tHeaders, tClass */) {
-                var i = 0,
-					j = 0;
+		/* Génère un tableau HTML */
+		write: function (tID, cID, tArray /* , tHeaders, tClass */) {
+			var i = 0,
+				j = 0;
 
-                var container = jQuery('#' + cID),
-					tHeader = undefined, /* Textes des en-têtes */
-					tClass = '', /* Classes CSS du tableau */
-					table, /* tableau HTML */
-					tbHeader, /* en-tete du tableau HTML */
-					tbBody, /* corps du tableau HTML */
-					tbTR, /* <tr> HTML */
-					tbTD; /* <td> HTML */
+			var container = jQuery('#' + cID),
+				tHeader = undefined, /* Textes des en-têtes */
+				tClass = '', /* Classes CSS du tableau */
+				table, /* tableau HTML */
+				tbHeader, /* en-tete du tableau HTML */
+				tbBody, /* corps du tableau HTML */
+				tbTR, /* <tr> HTML */
+				tbTD; /* <td> HTML */
 
-                /* Gestion des parametres facultatifs */
-                if (arguments[3]) { tHeader = arguments[3]; }
-                if (arguments[4]) { tClass = arguments[4]; }
+			/* Gestion des parametres facultatifs */
+			if (arguments[3]) { tHeader = arguments[3]; }
+			if (arguments[4]) { tClass = arguments[4]; }
 
-                /* Détermine si le conteneur existe */
-                if (container == undefined) {
-                    alert('le div conteneur n\'existe pas !');
-                    return false;
-                }
+			/* Détermine si le conteneur existe */
+			if (container == undefined) {
+				alert('le div conteneur n\'existe pas !');
+				return false;
+			}
 
-                /* vide le conteneur */
-                container.html('');
+			/* vide le conteneur */
+			container.html('');
 
-                /* Détermine si 'tID' est déjà utilisé */
-                if (jQuery('#' + tID).length > 0) {
-                    alert('l\'ID utilisé pour le tableau existe déjà !');
-                    return false;
-                }
+			/* Détermine si 'tID' est déjà utilisé */
+			if (jQuery('#' + tID).length > 0) {
+				alert('l\'ID utilisé pour le tableau existe déjà !');
+				return false;
+			}
 
-                /* Détermine si 'tArray' est un tableau javascript */
-                if (jQuery.isArray(tArray) == false) {
-                    alert('le parametre n\'est pas un tableau !');
-                    return false;
-                }
+			/* Détermine si 'tArray' est un tableau javascript */
+			if (jQuery.isArray(tArray) == false) {
+				alert('le parametre n\'est pas un tableau !');
+				return false;
+			}
 
-                /* Determine si un tableau d'en-tete est passé en parametre */
-                if (tHeader) {
-                    if (jQuery.isArray(tHeader) == false) {
-                        alert('le parametre d\'en-tete n\'est pas un tableau !');
-                        return false;
-                    }
-                }
+			/* Determine si un tableau d'en-tete est passé en parametre */
+			if (tHeader) {
+				if (jQuery.isArray(tHeader) == false) {
+					alert('le parametre d\'en-tete n\'est pas un tableau !');
+					return false;
+				}
+			}
 
-                /* Défini la table */
-                container.append('<table id="' + tID + '"></table>');
-                table = jQuery('#' + tID);
+			/* Défini la table */
+			container.append('<table id="' + tID + '"></table>');
+			table = jQuery('#' + tID);
 
-                /* Si tHeader est défini */
-                if (tHeader != undefined) {
-                    /* Défini le header */
-                    table.append('<thead></thead>');
-                    tbHeader = table.children('thead');
+			/* Si tHeader est défini */
+			if (tHeader != undefined) {
+				/* Défini le header */
+				table.append('<thead></thead>');
+				tbHeader = table.children('thead');
 
-                    /* Ecriture des en-tete */
-                    tbHeader.append('<tr></tr>');
-                    tbTR = tbHeader.children('tr');
+				/* Ecriture des en-tete */
+				tbHeader.append('<tr></tr>');
+				tbTR = tbHeader.children('tr');
 
-                    for (i = 0; i < tHeader.length; i++) {
-                        tbTR.append('<td>' + tHeader[i] + '</td>');
-                    }
-                }
+				for (i = 0; i < tHeader.length; i++) {
+					tbTR.append('<td>' + tHeader[i] + '</td>');
+				}
+			}
 
-                /* Défini le body */
-                table.append('<tbody></tbody>');
-                tbBody = table.children('tbody');
+			/* Défini le body */
+			table.append('<tbody></tbody>');
+			tbBody = table.children('tbody');
 
-                for (i = 0; i < tArray.length; i++) {
-                    tbBody.append('<tr></tr>');
-                    tbTR = jQuery(tbBody.children('tr')[i]);
+			for (i = 0; i < tArray.length; i++) {
+				tbBody.append('<tr></tr>');
+				tbTR = jQuery(tbBody.children('tr')[i]);
 
-                    for (j = 0; j < tArray[i].length; j++) {
-                        tbTR.append('<td>' + tArray[i][j] + '</td>');
-                    }
-                }
+				for (j = 0; j < tArray[i].length; j++) {
+					tbTR.append('<td>' + tArray[i][j] + '</td>');
+				}
+			}
 
 
-                /* Rends le tableau compatible avec tablesorter */
-                table.tablesorter({
-                    showProcessing: true,
-                    widgets: ['stickyHeaders', 'filter'],
-                    widgetOptions: {
-                        stickyHeaders: "tablesorter-stickyHeader"
-                    }
-                });
+			/* Rends le tableau compatible avec tablesorter */
+			table.tablesorter({
+				showProcessing: true,
+				widgets: ['stickyHeaders', 'filter'],
+				widgetOptions: {
+					stickyHeaders: "tablesorter-stickyHeader"
+				}
+			});
 
-                /* Aplique les classes de style au tableau */
-                table.addClass(tClass);
-            }
-        },
+			/* Aplique les classes de style au tableau */
+			table.addClass(tClass);
+		}
+	};
+	
+	_ZeLib.array = {
+		sort: {
+			dim: function (index) {
+				return function (a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
+			}
+		},
+		
+		getColumn: function (tArray, dim) {
+			var a = new Array;
+			for (i = 0; i < tArray.length; i++) {
+				a.push(tArray[i][dim]);
+			}
+			return a;
+		}
+	};
+		
+	_ZeLib.url = {
+		get: {
+			param: {
+				byName: function (name) {
+					name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+					var regexS = "[\\?&]" + name + "=([^&#]*)";
+					var regex = new RegExp(regexS);
+					var results = regex.exec(window.location.search);
+					if (results == null)
+						return "";
+					else
+						return decodeURIComponent(results[1].replace(/\+/g, " "));
+				}
+			}
+		},
 
-        /* Fonctions URL */
-        url: {
-            get: {
-                param: {
-                    byName: function (name) {
-                        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-                        var regexS = "[\\?&]" + name + "=([^&#]*)";
-                        var regex = new RegExp(regexS);
-                        var results = regex.exec(window.location.search);
-                        if (results == null)
-                            return "";
-                        else
-                            return decodeURIComponent(results[1].replace(/\+/g, " "));
-                    }
-                }
-            },
+		redirect: function (thePage) {
+			/* Ajout du hash pour conserver le parametre de langue */
+			var lang = window.location.hash.split('/')[1];
+			if (lang == undefined) { lang = 'fr'; }
 
-            redirect: function (thePage) {
-                /* Ajout du hash pour conserver le parametre de langue */
-                var lang = window.location.hash.split('/')[1];
-                if (lang == undefined) { lang = 'fr'; }
+			window.location.href = thePage + '#/' + lang;
+		}
+	};
+	
+	_ZeLib.fn = {
+		/* Retourne le type de l'argument */
+		type: function(obj) {
+			return (typeof obj).toString(); ;
+		},
 
-                window.location.href = thePage + '#/' + lang;
-            }
-        },
+		/* Teste si l'argument est un tableau */
+		isArray: function(obj) {
+			if (typeof obj == typeof []) {
+				return true;
+			} else {
+				return false;
+			}
+		},
 
-        /* Graphiques */
-        graphs: {
+		/* Teste si numérique */
+		isNumeric: function(obj) {
+			var numericExpression = /^(-|[0-9]|\.)+$/;
+			if (String(obj).match(numericExpression)) {
+				return true;
+			} else {
+				return false;
+			}
+		},
+
+		/* Teste si le tableau est une série de nombres */
+		isSerie: function(aArray) {
+			var dim, i;
+
+			/* Teste si l'argument est un tableau */
+			if (!this.isArray(aArray)) { return false; }
+
+			/* Obtient le nombre de dimensions du tableau */
+			dim = this.getDimOfArray(aArray);
+			if (dim != 1) { return false; }
+
+			/* Verification que tous les éléments soient numériques */
+			for (i = 0; i < aArray.length; i++) { if (this.isNumeric(aArray[i]) == false) { return false; } }
+
+			return true;
+		},
+
+		/* Retourne le nombre de dimensions du tableau */
+		getDimOfArray: function(aArray) {
+			var dim = 0;
+			var tArray;
+			var EOT = true; /* End Of Test */
+
+			while (EOT) {
+				if (this.isArray(aArray) == true) {
+					aArray = aArray[0];
+					dim++;
+					EOT = true;
+				} else { EOT = false; }
+			}
+
+			return dim;
+		},
+
+		/* Fonctions sur les nombres */
+
+		/* Arrondi d'un nombre */
+		roundNumber: function(rnum, rlength) {
+			if (this.isNumeric(rnum) == false) {
+				return rnum; }
+			var newnumber = Math.round(rnum * Math.pow(10, rlength)) / Math.pow(10, rlength);
+			return parseFloat(newnumber);
+		},
+
+		/* Test de parité */
+		isPair: function(iValue) {
+			if ((iValue / 2) == parseInt(iValue / 2)) { return true; } else { return false; }
+		},
+
+		/* Supprime les doublons d'un tableau */
+		noDoublons: function(aArray) {
+			aOut = [], i;
+			for (i = 0; i < aArray.length; i++) { if (this.inArray(aArray[i], aOut) < 0) { aOut.push(aArray[i]); } }
+			return aOut;
+		},
+		/* Fin des fonctions sur les nombres */
+
+		/* Teste la présence de l'élément dans le tableau */
+		inArray: function(elem, arr, i) {
+			var len;
+
+			if (arr) {
+				if (core_indexOf) {
+					return core_indexOf.call(arr, elem, i);
+				}
+
+				len = arr.length;
+				i = i ? i < 0 ? Math.max(0, len + i) : i : 0;
+
+				for (; i < len; i++) {
+					// Skip accessing in sparse arrays
+					if (i in arr && arr[i] === elem) {
+						return i;
+					}
+				}
+			}
+
+			return -1;
+		},
+
+		/* Envoie un message à l'utilisateur (Type E.T.-téléphone-maison) */
+		alert: function(msg) {
+			console.log('Message stats.js : \n' + msg);
+		},
+
+		/* 'Jete' une erreur */
+		error: function(msg) {
+			console.log('Erreur stats.js : \n' + msg);
+			throw 'Erreur stats.js : \n' + msg;
+			// throw new Error(msg);
+		}
+	};
+	
+	_ZeLib.math = {
+		loiNormale: function(value, esp, ect) {
+			var tempExp,
+				sqrt2pi = Math.sqrt(2 * Math.PI),
+				fOut = 0;
+			
+			value = parseFloat(value);
+			esp = parseFloat(esp);
+			ect = parseFloat(ect);
+
+			tempExp = -(value - esp) * (value - esp) / (2 * ect * ect);
+			fOut = (1 / (ect * sqrt2pi)) * Math.exp(tempExp);
+
+			return fOut;
+		},
+		
+		min: function (aArray) {
+			var i, min = aArray[0];
+			for (i=0;i<aArray.length;i++) { if (aArray[i] < min) { min = aArray[i]; } }
+			return min;
+		},
+		
+		max: function (aArray) {
+			var i, max = aArray[0];
+			for (i=0;i<aArray.length;i++) { if (aArray[i] > max) { max = aArray[i]; } }
+			return max;
+		},
+				
+		moyenne: function(aArray) {
+			var nbElem = 0, /* Nombre d'éléments dans le tableau */
+			sum = 0, /* Somme de tous les éléments */
+			i;
+
+			if (!_ZeLib.fn.isSerie(aArray)) {
+				_ZeLib.fn.error('Le tableau n\'est pas une série (moyenne)');
+			}
+
+			nbElem = aArray.length;
+
+			/* Calcul de la moyenne */
+			for (i = 0; i < aArray.length; i++) { sum = parseFloat(sum) + parseFloat(aArray[i]); }
+
+			return parseFloat(sum) / parseFloat(nbElem);
+		},
+
+		mediane: function(aArray) {
+			var i,
+			nbElem,
+			med;
+
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+
+			/* Tri du tableau */
+			aArray.sort();
+			nbElem = aArray.length;
+
+			/* Calcul de la médianes */
+			if (_ZeLib.fn.isPair(nbElem)) {
+				med = this.moyenne([aArray[(nbElem / 2) - 1], aArray[((nbElem / 2) + 1) - 1]]);
+			} else { med = aArray[(nbElem - 1) / 2]; }
+
+			return med;
+		},
+
+		variance: function(aArray) {
+			var i,
+			nbElem,
+			fMoy,
+			fVar,
+			fTmp;
+
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+
+			nbElem = aArray.length;
+			fMoy = parseFloat(this.moyenne(aArray));
+			fVar = 0;
+			for (i = 0; i < nbElem; i++) {
+				fTmp = parseFloat(aArray[i]) - fMoy;
+				fVar = parseFloat(fVar) + parseFloat(fTmp * fTmp);
+			}
+
+			fVar = parseFloat(fVar) / nbElem;
+
+			return fVar;
+		},
+
+		ecartType: function(aArray) {
+			var fEcTp,
+			fVar;
+
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (ecartType)'); }
+
+			fVar = this.variance(aArray);
+			fEcTp = Math.sqrt(fVar);
+			return fEcTp;
+		},
+		
+		/* Variance en % */
+		variance_percent: function (aArray) {
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (R&R)'); }
+			
+			var max = this.max(aArray),
+				min = this.min(aArray);
+				stDev = this.variance(aArray);
+				
+			return parseFloat(100 * stDev/(max-min));
+		},
+		
+		/* Calcul du CpK */
+		cpk: function (aArray, tolMin, tolMax) {
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (CpK)'); }
+			if (this.isNormal(aArray,0)) {
+				var cpkmin = parseFloat((this.moyenne(aArray) - tolMin) / (3 * this.ecartType(aArray))),
+					cpkmax = parseFloat((tolMax - this.moyenne(aArray)) / (3 * this.ecartType(aArray)));
+				return this.min([cpkmin,cpkmax]);
+			} else {
+				return '-';
+			}
+		},
+
+		/* Limites de controle à nbS ecart-types */
+		LCI: function(aArray, nbS) {
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isNumeric(nbS)) { _ZeLib.fn.error('Variable non numerique'); }
+
+			return this.moyenne(aArray) - nbS * this.ecartType(aArray);
+		},
+
+		/* Limites de controle à nbS ecart-types */
+		LCS: function(aArray, nbS) {
+			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isNumeric(nbS)) { _ZeLib.fn.error('Variable non numerique'); }
+
+			return this.moyenne(aArray) + nbS * this.ecartType(aArray);
+		},
+
+		isNormal: function(aArray, nbClasses /* Inutilisé pour l'instant */) {
+			/*	Test de Kolgomorov-Smirnov */
+			/*	Principe :
+				Le test consiste à mesurer l'écart
+				entre la fonction de répartition exacte (ici, la loi normale)
+				et la fonction de répartition empirique
+				
+				le test est validé si la valeur absolue de
+				l'ecart max des fréquences ne dépasse pas une certaine valeur
+			   
+				On calcule donc les fréquences
+				d'apparition de toutes les valeurs distinctes
+			*/
+		
+			var aFreq = [[],[],[]], /* Tableau des fréquences */
+				max, /* écart max */
+				sizeOf, /* Taille du tableau */
+				normal, /* contient la sortie */
+				pos, i;
+				
+			if (!_ZeLib.fn.isSerie) { return false; }
+
+			sizeOf = aArray.length
+			
+			/* Calcul des fréquences */
+			for (i = 0; i < sizeOf; i++) {
+				pos = _ZeLib.fn.inArray(aArray[i], aFreq[0]);
+				if (pos < 0) {
+					aFreq[0].push(aArray[i]);
+					aFreq[1].push(1);
+				} else {
+					aFreq[1][pos] = aFreq[1][pos]+1;
+				}
+			}
+
+			for (i = 0; i < aFreq[1].length; i++) { aFreq[1][i] = aFreq[1][i] / sizeOf; }
+
+			/* Calcul des fréquences théoriques */
+			max = 0;
+			for(i=0;i<aFreq[0].length;i++) {
+				aFreq[2][i] = this.loiNormale(
+									aFreq[0][i],
+									this.moyenne(aFreq[0]),
+									this.ecartType(aFreq[0])) / aFreq[0].length;
+				
+				if (Math.abs(aFreq[2][i] - aFreq[1][i]) > max) { max = Math.abs(aFreq[2][i] - aFreq[1][i]); }
+			}
+			
+			normal = false;
+			
+			if (sizeOf < 41) {
+				/*	Table des valeurs critiques
+					du test de Kolmogorov-Smirnov pour un échantillon
+					pour une erreur à 5%
+					N 	Valeur
+					5	0.565
+					6	0.52
+					7	0.49
+					8	0.46
+					9	0.43
+					10	0.41
+					11	0.39
+					12	0.38
+					13	0.36
+					14	0.35
+					15	0.34
+					16	0.33
+					17	0.32
+					18	0.31
+					19	0.30
+					20	0.29
+					21	0.29
+					22	0.28
+					23	0.28
+					24	0.27
+					25	0.26
+					26	0.26
+					27	0.25
+					28	0.25
+					29	0.25
+					30	0.24
+					31	0.24
+					32	0.23
+					33	0.23
+					34	0.23
+					35	0.22
+					36	0.22
+					37	0.22
+					38	0.22
+					39	0.21
+					40	0.21
+
+					Equation de la courbe de tendance : 1.2349*max^(-0.48)
+					Coeff R² = 0.9999
+				*/
+				
+				if (max > (1.2349 * Math.pow(sizeOf,-0.48))) { normal = false; } else { normal = true }
+			} else {
+				/* 	Pour sizeOf >= 40
+					Les valeurs critiques du test sont déterminées par la formule :
+					1.36 * racine (N)
+				*/
+				
+				if (max > (1.36 * Math.sqrt(sizeOf))) { normal = false; } else { normal = true }
+			}
+			
+			return normal;
+		}
+
+	};
+	
+	_ZeLib.graphs = {
             /* Pareto */
             pareto: {
                 /* Options génériques */
@@ -210,8 +645,7 @@
                     yaxis: {
                         min: 0,
                         autoscaleMargin: 1,
-                        showLabels: true,
-                        tickFormatter: TickPareto
+                        showLabels: true
                     },
                     xaxis: {
                         autoscale: true
@@ -227,7 +661,7 @@
 
                     function internal_draw_pa(id, dArray, tFormat, opts) {
                         var o = Flotr._.extend(
-								Flotr._.clone(_lib.graphs.pareto.options),
+								Flotr._.clone(_ZeLib.graphs.pareto.options),
 								opts || {});
 
                         oM = { mouse: { track: true, relative: true, trackFormatter: tFormat} };
@@ -279,8 +713,10 @@
                     selection: {
                         mode: 'x'
                     },
+					legend : {
+						position : 'ne'
+					},
                     HtmlText: false,
-                    title: 'Temporel',
                     mouse: {
                         track: true,
                         relative: true
@@ -297,24 +733,34 @@
                     if (arg.cols == undefined) { arg.cols = { x: 0, y: 1 }; }
                     if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
                     if (arg.data == undefined) { throw 'histo.draw: no data'; }
-
+					if (arg.title == undefined) { arg.title = 'Serie 1'; }
+					if (arg.timeProportional == undefined) { arg.timeProportional = true; }
                     var i;
                     var datArr = new Array;
 
                     for (i = 0; i < arg.data.length; i++) {
-                        datArr.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y]]);
+						if (arg.timeProportional == false) {
+							datArr.push([i, arg.data[i][arg.cols.y]]);
+						} else {
+							datArr.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y]]);
+						}
                     }
                     var container = document.getElementById(arg.cont);
                     var options = this.opt;
                     var d1 = datArr;
                     var graph_h;
 
+                    options.xaxis.margin = 30;
+					options.mouse.trackFormatter = function (t) { return arg.data[parseInt(t.x,10)][arg.cols.x] + ' - ' + t.y; }
+					if (arg.timeProportional == false) {
+						options.xaxis.mode = 'normal';
+					}
                     // Draw graph with default options, overwriting with passed options
                     function drawGraph(opts) {
                         // Clone the options, so the 'options' variable always keeps intact.
                         o = Flotr._.extend(Flotr._.clone(options), opts || {});
                         // Return a new graph.
-                        return Flotr.draw(container, [d1], o);
+                        return Flotr.draw(container, [{data: d1, label: arg.title}], o);
                     }
 
                     graph_h = drawGraph();
@@ -322,7 +768,7 @@
                     Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
                         // Draw selected area
                         graph_h = drawGraph({
-                            xaxis: { min: area.x1, max: area.x2, mode: 'time', labelsAngle: 45 },
+                            xaxis: { min: area.x1, max: area.x2, mode: 'time', labelsAngle: 45, margin: 30 },
                             yaxis: { min: area.y1, max: area.y2 }
                         });
                     });
@@ -353,29 +799,38 @@
                     xaxis: {
                         labelsAngle: 45
                     },
+					legend : {
+						position : 'ne'
+					},
                     selection: {
                         mode: 'x'
                     },
                     grid: {
                         verticalLines: false
                     },
-                    HtmlText: false,
-                    title: 'Repartition'
+                    HtmlText: false
                 },
 
                 draw: function (arg) {
+					//TODO : fix bug when multiple redraw
+					//TODO : add option to draw vertical line
                     /*
-                    arg.data    :   tableau de données
-                    arg.cols    :   colonnes à utiliser, format : { x: 0 } [facultatif - par défaut { x: 0 }]
-                    arg.cont    :   id du container
+						arg.data    :   tableau de données
+						arg.cols    :   colonnes à utiliser, format : { x: 0 } [facultatif - par défaut { x: 0 }]
+						arg.cont    :   id du container
+						arg.title	: 	titre du graphique
+						arg.vertical:	array of values for vertical lines - formart : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]
                     */
-
+					var withVert = true;
+					
                     if (arg.cols == undefined) { arg.cols = { x: 0 }; }
                     if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
                     if (arg.data == undefined) { throw 'histo.draw: no data'; }
                     if (arg.div == undefined || arg.div == 0) { arg.div = 10; }
-
-                    Flotr.destroy();
+					if (arg.title == undefined) { arg.title = 'Serie 1'; }
+					if (arg.vertical == undefined) { withVert = false; }
+					
+                    //Flotr.destroy();
                     var i;
                     var tArr = new Array;
                     for (i = 0; i < arg.data.length; i++) {
@@ -385,11 +840,7 @@
                     var min = $$.math.min(tArr);
                     var max = $$.math.max(tArr);
                     var ec = (max - min) / (arg.div - 1);
-                    var datArr = new Array;
-
-                    this.opt.bars.barWidth = ec;
-                    this.opt.xaxis.min = min - ec / 2;
-                    this.opt.xaxis.max = max - ec / 2;
+                    var datArr = new Array;                    
 
                     for (i = 0; i < arg.div; i++) {
                         datArr.push([min + i * ec, 0]);
@@ -400,197 +851,257 @@
                     }
 
                     var container = document.getElementById(arg.cont);
+                    container.innerHTML = '';
+                    
                     var options = this.opt;
                     var d1 = datArr;
-                    var graph_r = undefined;
-
+					
+					options.yaxis.min = 0;
+					options.yaxis.max = _ZeLib.math.max(_ZeLib.array.getColumn(d1,1))*(1.1);
+					
+					options.bars.barWidth = ec;
+                    options.xaxis.min = min - ec / 2;
+                    options.xaxis.max = max - ec / 2;
+					options.xaxis.margin = 30;
+					
+					var dataArray = [{data: d1, label: arg.title}];
+					
+					var vertValue, vertName;
+					/* Ajout des lignes verticales */
+					if (withVert == true) {
+						for (i=0;i<arg.vertical.length;i++) {
+							vertValue = arg.vertical[i].data;
+							vertName = arg.vertical[i].name;
+							
+							dataArray.push({data: [[vertValue, -1],[vertValue, 1000000]], label: vertName, lines: {show: true}, bars: {show: false}});
+						}
+					}
+					
                     // Draw graph with default options, overwriting with passed options
                     function drawGraph(opts) {
                         // Clone the options, so the 'options' variable always keeps intact.
                         o = Flotr._.extend(Flotr._.clone(options), opts || {});
                         // Return a new graph.
-                        return Flotr.draw(container, [d1], o);
+                        Flotr.draw(container, dataArray, o);
                     }
 
-                    graph_r = drawGraph();
+                    drawGraph();
 
                     Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
                         // Draw selected area
-                        graph_r = drawGraph({
-                            xaxis: { min: area.x1, max: area.x2, labelsAngle: 45 },
+                        drawGraph({
+                            xaxis: { min: area.x1, max: area.x2, labelsAngle: 45, margin: 30 },
                             yaxis: { min: area.y1, max: area.y2 }
                         });
                     });
                     // When graph is clicked, draw the graph with default area.
-                    Flotr.EventAdapter.observe(container, 'flotr:click', function () { graph_r = drawGraph(); });
+                    Flotr.EventAdapter.observe(container, 'flotr:click', function () { drawGraph(); });
 
                 }
             }
-        },
+	};
 
-        /* Dates */
-        dates: {
-            fr2js: function (frDate) {
-                var frDate_j = parseInt(frDate.substring(0, 2), 10),
-					frDate_m = parseInt(frDate.substring(3, 5), 10),
-					frDate_a = parseInt(frDate.substring(6, 10), 10);
-                var jsDate;
+    _ZeLib.dates = {
+		dateCode2js: function (dCode) {
+			var dD =  parseInt(dCode.substring(0, 2),10),
+				dM =  parseInt(dCode.substring(2, 4),10),
+				dY =  parseInt(dCode.substring(4, 10),10);
+			var jsDate;
+			jsDate = new Date(dY, dM - 1, dD);
+			return jsDate;
+		},
+		
+		fr2js: function (frDate) {
+			var frDate_j = parseInt(frDate.substring(0, 2), 10),
+				frDate_m = parseInt(frDate.substring(3, 5), 10),
+				frDate_a = parseInt(frDate.substring(6, 10), 10);
+			var jsDate;
 
-                jsDate = new Date(frDate_a, frDate_m - 1, frDate_j);
+			jsDate = new Date(frDate_a, frDate_m - 1, frDate_j);
 
-                return jsDate;
-            },
-            fr2jstime: function (frDate) {
-                var frDate_j = parseInt(frDate.substring(0, 2), 10),
-					frDate_m = parseInt(frDate.substring(3, 5), 10),
-					frDate_a = parseInt(frDate.substring(6, 10), 10),
-					frDate_hh = parseInt(frDate.substring(11, 13), 10),
-					frDate_mm = parseInt(frDate.substring(14, 16), 10),
-					frDate_ss = parseInt(frDate.substring(17, 19), 10);
-                var jsDate;
+			return jsDate;
+		},
+		
+		fr2jstime: function (frDate) {
+			var frDate_j = parseInt(frDate.substring(0, 2), 10),
+				frDate_m = parseInt(frDate.substring(3, 5), 10),
+				frDate_a = parseInt(frDate.substring(6, 10), 10),
+				frDate_hh = parseInt(frDate.substring(11, 13), 10),
+				frDate_mm = parseInt(frDate.substring(14, 16), 10),
+				frDate_ss = parseInt(frDate.substring(17, 19), 10);
+			var jsDate;
 
-                jsDate = new Date(frDate_a, frDate_m - 1, frDate_j, frDate_hh, frDate_mm, frDate_ss);
+			jsDate = new Date(frDate_a, frDate_m - 1, frDate_j, frDate_hh, frDate_mm, frDate_ss);
 
-                return jsDate;
-            },
-            diff: {
-                inDays: function (d1, d2) {
-                    var t2 = d2.getTime();
-                    var t1 = d1.getTime();
+			return jsDate;
+		},
+		
+		diff: {
+			inDays: function (d1, d2) {
+				var t2 = d2.getTime();
+				var t1 = d1.getTime();
 
-                    return parseInt((t2 - t1) / (24 * 3600 * 1000));
-                },
+				return parseInt((t2 - t1) / (24 * 3600 * 1000));
+			},
 
-                inWeeks: function (d1, d2) {
-                    var t2 = d2.getTime();
-                    var t1 = d1.getTime();
+			inWeeks: function (d1, d2) {
+				var t2 = d2.getTime();
+				var t1 = d1.getTime();
 
-                    return parseInt((t2 - t1) / (24 * 3600 * 1000 * 7));
-                },
+				return parseInt((t2 - t1) / (24 * 3600 * 1000 * 7));
+			},
 
-                inMonths: function (d1, d2) {
-                    var d1Y = d1.getFullYear();
-                    var d2Y = d2.getFullYear();
-                    var d1M = d1.getMonth();
-                    var d2M = d2.getMonth();
+			inMonths: function (d1, d2) {
+				var d1Y = d1.getFullYear();
+				var d2Y = d2.getFullYear();
+				var d1M = d1.getMonth();
+				var d2M = d2.getMonth();
 
-                    return (d2M + 12 * d2Y) - (d1M + 12 * d1Y);
-                },
+				return (d2M + 12 * d2Y) - (d1M + 12 * d1Y);
+			},
 
-                inYears: function (d1, d2) {
-                    return d2.getFullYear() - d1.getFullYear();
-                }
-            },
-            dateAddExtention: function (p_Interval, p_Number) {
-                var thing = new String();
-                p_Interval = p_Interval.toLowerCase();
+			inYears: function (d1, d2) {
+				return d2.getFullYear() - d1.getFullYear();
+			}
+		},
+		
+		dateAddExtension: function (p_Interval, p_Number) {
+			var thing = new String();
+			p_Interval = p_Interval.toLowerCase();
 
-                if (isNaN(p_Number)) {
-                    throw "The second parameter must be a number. \n You passed: " + p_Number;
-                    return false;
-                }
+			if (isNaN(p_Number)) {
+				throw "The second parameter must be a number. \n You passed: " + p_Number;
+				return false;
+			}
 
-                p_Number = new Number(p_Number);
-                switch (p_Interval.toLowerCase()) {
-                    case "yyyy":
-                        {// year 
-                            this.setFullYear(this.getFullYear() + p_Number);
-                            break;
-                        }
-                    case "q":
-                        {        // quarter 
-                            this.setMonth(this.getMonth() + (p_Number * 3));
-                            break;
-                        }
-                    case "m":
-                        {        // month 
-                            this.setMonth(this.getMonth() + p_Number);
-                            break;
-                        }
-                    case "y":        // day of year 
-                    case "d":        // day 
-                    case "w":
-                        {        // weekday 
-                            this.setDate(this.getDate() + p_Number);
-                            break;
-                        }
-                    case "ww":
-                        {    // week of year 
-                            this.setDate(this.getDate() + (p_Number * 7));
-                            break;
-                        }
-                    case "h":
-                        {        // hour 
-                            this.setHours(this.getHours() + p_Number);
-                            break;
-                        }
-                    case "n":
-                        {        // minute 
-                            this.setMinutes(this.getMinutes() + p_Number);
-                            break;
-                        }
-                    case "s":
-                        {        // second 
-                            this.setSeconds(this.getSeconds() + p_Number);
-                            break;
-                        }
-                    case "ms":
-                        {        // second 
-                            this.setMilliseconds(this.getMilliseconds() + p_Number);
-                            break;
-                        }
-                    default:
-                        {
-						//throws an error so that the coder can see why he effed up and 
-						//a list of elegible letters. 
-                            throw "The first parameter must be a string from this list: \n" +
-								"yyyy, q, m, y, d, w, ww, h, n, s, or ms. You passed: " + p_Interval;
-                            return false;
-                        }
-                }
-                return this;
-            }
-        },
+			p_Number = new Number(p_Number);
+			switch (p_Interval.toLowerCase()) {
+				case "yyyy":
+					{// year 
+						this.setFullYear(this.getFullYear() + p_Number);
+						break;
+					}
+				case "q":
+					{        // quarter 
+						this.setMonth(this.getMonth() + (p_Number * 3));
+						break;
+					}
+				case "m":
+					{        // month 
+						this.setMonth(this.getMonth() + p_Number);
+						break;
+					}
+				case "y":        // day of year 
+				case "d":        // day 
+				case "w":
+					{        // weekday 
+						this.setDate(this.getDate() + p_Number);
+						break;
+					}
+				case "ww":
+					{    // week of year 
+						this.setDate(this.getDate() + (p_Number * 7));
+						break;
+					}
+				case "h":
+					{        // hour 
+						this.setHours(this.getHours() + p_Number);
+						break;
+					}
+				case "n":
+					{        // minute 
+						this.setMinutes(this.getMinutes() + p_Number);
+						break;
+					}
+				case "s":
+					{        // second 
+						this.setSeconds(this.getSeconds() + p_Number);
+						break;
+					}
+				case "ms":
+					{        // second 
+						this.setMilliseconds(this.getMilliseconds() + p_Number);
+						break;
+					}
+				default:
+					{
+					//throws an error so that the coder can see why he effed up and 
+					//a list of elegible letters. 
+						throw "The first parameter must be a string from this list: \n" +
+							"yyyy, q, m, y, d, w, ww, h, n, s, or ms. You passed: " + p_Interval;
+						return false;
+					}
+			}
+			return this;
+		},
+		
+		/* Retourne le numéro de semaine (ISO) */
+		numSem: function (aaaa, mm, jj) {
+			mm = mm - 1;
+			var MaDate = new Date(aaaa, mm, jj),
+				annee = MaDate.getFullYear(),
+				NumSemaine = 0,
+				ListeMois = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
+				TotalJour = 0,
+				JourDebutAn;
+				
+			if (annee % 4 == 0 && annee % 100 != 0 || annee % 400 == 0) { ListeMois[1] = 29 };
+			for (cpt = 0; cpt < mm; cpt++) { TotalJour += ListeMois[cpt]; }
+			
+			TotalJour += jj;
+			DebutAn = new Date(annee, 0, 1);
+			JourDebutAn = DebutAn.getDay();
+			
+			if (JourDebutAn == 0) { JourDebutAn = 7 };
+			
+			TotalJour -= 8 - JourDebutAn;
+			NumSemaine = 1;
+			NumSemaine += Math.floor(TotalJour / 7);
+			
+			if (TotalJour % 7 != 0) { NumSemaine += 1 };
+			if (JourDebutAn > 4) { NumSemaine -= 1 };
+			if (NumSemaine == 0) { NumSemaine = 53 };
+			
+			return (NumSemaine);
+		}
+	};
+	
+	_ZeLib.string = {
+		/* Supprime les espaces au début et à la fin d'une chaine */
+		trim: function (myString) {
+			return myString.replace(/^\s+/g, '').replace(/\s+$/g, '');
+		}
+	};
 
-        array: {
-            sort: {
-                dim: function (index) {
-                    return function (a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
-                }
-            }
-        },
+	_ZeLib.ajax = {
 
-        ajax: {
+		toArray: function (str,lSep,cSep) {
+			var tmpArray = str.split(lSep), i, tArray = new Array;
 
-            toArray: function (msg) {
-                var tmpArray = msg.d.split('|&&'),
-					i,
-					tArray = new Array;
+			for (i = 0; i < tmpArray.length - 1; i++) {
+				tArray[i] = tmpArray[i].split(cSep);
+			}
 
-                for (i = 0; i < tmpArray.length - 1; i++) {
-                    tArray[i] = tmpArray[i].split('|');
-                }
+			return tArray;
+		},
 
-                return tArray;
-            },
+		queue: function (ajaxOpts) {
+			var oldComplete = ajaxOpts.complete;
+			ajaxQueue.queue(function (next) {
+				ajaxOpts.complete = function () {
+					if (oldComplete) {oldComplete.apply(this, arguments);}
+					next();
+				};
 
-            queue: function (ajaxOpts) {
-                var oldComplete = ajaxOpts.complete;
-                ajaxQueue.queue(function (next) {
-                    ajaxOpts.complete = function () {
-                        if (oldComplete) {oldComplete.apply(this, arguments);}
-                        next();
-                    };
+				jQuery.ajax(ajaxOpts);
+			});
+		}
 
-                    jQuery.ajax(ajaxOpts);
-                });
-            }
+	};
 
-        }
-    }
-
-    Date.prototype.dateAdd = _ZeLib.dates.dateAddExtention;
-
-    if (!window.z) { window.z = _ZeLib; }
-
+    Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
+	
+	String.prototype.trim = _ZeLib.string.trim;
+	
+	if (!window.z) { window.z = _ZeLib; }
 })();
