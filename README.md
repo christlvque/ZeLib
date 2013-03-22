@@ -9,34 +9,151 @@ Functions
 ----------
 
 * HTML Table
-  * Convert a JS Array into a html table (Array)   
-	``` z.tableau.write(wanted id , container id, JS Array  [, Array of headers titles [, CSS classes to use ]]);```
-  * Load a html table inside a JS Array   
-	```z.tableau.read(id of the table);```
+  * Convert a JS Array into a html table (Array)
+  
+		```javascript   
+		z.tableau.write(   
+			/* wanted id */,   
+			/* container id */,   
+			/* JS Array */,   
+			/* Array of headers titles, optional*/,   
+			/* CSS classes to use, optional */);   
+		```
+  * Load a html table inside a JS Array
+  
+		```javascript
+		z.tableau.read(id of the table);
+		```
 * JS Array
-	* Sort a multidimensional Array by one dimension   
-	```z.array.sort.dim(dimension to sort);```
-  * Return one column of a 2-dimensional array   
-	```z.array.getColumn(JS Array, dimension to output);```	
+	* Sort a multidimensional Array by one dimension
+	
+		```javascript   
+		z.array.sort.dim(dimension to sort);
+		```
+  * Return one column of a 2-dimensional array
+  
+		```javascript  
+		z.array.getColumn(JS Array, dimension to output);
+		```	
 * URLs
-  * get url parameters by id   
-  ```z.url.get.param.byName(param name);```
-  * JS redirection   
-  ```z.url.redirect(url);```
+  * get url parameters by id
+  
+	  ```javascript
+		z.url.get.param.byName(param name);
+		```
+  * JS redirection
+  
+	  ```javascript
+		z.url.redirect(url);
+		```
 
 * Charts & Graphs
   * Pareto
-  * time repartition
+  
+	  ```javascript
+		z.graphs.pareto.draw(container id, data Array, mouseover format function, Flotr options);
+		```
+
+  * time repartition 
+  
+	  ```javascript
+		z.graphs.histo.draw({   
+			data: theArray, //data array    
+			cols: {
+				x: 0,   
+				y 1
+			},    
+			cont: container_id,    
+			title: 'Serie 1',		//Title of the graph 
+			timeProportional: true	//set to false to avoid blanks
+		});
+		```
+	
   * values repartition
-* Dates
+  
+		```javascript
+		var opt = {   
+			data: theArray, 		//data array
+			cols: { x: 0 },			//Columns of the array to use
+			div: 10,				//Number of groups of data
+			cont: container_id,		//html id of the graph container
+			title: 'Serie 1',		//Title of the graph 
+			vertical: false			//disable vertical lines (see below)
+		};
+		
+		//if you want to draw some vertical bars
+		//set vertical object like this :
+		opt.vertical = [{	//An array of objects
+				data: value1,	//a Float value
+				name: 'Value 1'	//Line name (displayed in legend box)
+		}];
+
+		//Finally, draw the graph
+		z.graphs.repart.draw(opt);
+		```
+* Dates **!! WARNING** date functions will be merged soon
   * Convert date from _JJMMAAAA_ to JS date format
+  
+		```javascript
+		z.dates.dateCode2js('01012013');
+		```
   * Convert date from _JJ/MM/AAAA_ to JS date format
+  
+		```javascript
+		z.dates.fr2js('01/01/2013');
+		```
   * convert date from _JJ/MM/AAAA HH:MM:SS_ to JS date format
+
+		```javascript
+		z.dates.fr2jstime('01/01/2013 13:37:30');
+		```
   * Calculate date difference in days, weeks, months or years
+  
+		```javascript
+		var intDiff;
+		
+		//Diff in days
+		intDiff = z.dates.diff.inDays(date1, date2);
+		//Diff in weeks
+		intDiff = z.dates.diff.inWeeks(date1, date2);
+		//Diff in months
+		intDiff = z.dates.diff.inMonths(date1, date2);
+		//Diff in years
+		intDiff = z.dates.diff.inYears(date1, date2);
+		```
   * Add a time interval to a JS date
+
+		```javascript
+		//Use a JS date
+		var aDate = new Date();
+		
+		// - The first parameter can be
+		//		'yyyy', 'q', 'm', 'y', 'd', 'w', 'ww', 'h', 'n', 's', or 'ms'
+		// - The second parameter must be a number
+		aDate.dateAdd('h',3);
+		```
+	* Return the ISO week number
+
+		```javascript
+		var weekNumber = z.date.numSem(2012,12,25);
+		//weekNumber = 52
+		```
 * Strings
   * Add equivalent to 'Trim' VB-function
+  
+		```javascript
+		var aString = '   Kenavo !  ';
+		aString = aString.trim();
+		```
   * Return a JS array from a string
+ 
+		```javascript
+		var aString = 'a;b;c;;d;e;f';
+		var arry = new Array;
+		
+		arry = aString.toArray(';;',';'));
+		//arry = [["a","b", "c"],["d","e","f"]]
+		```
 * Ajax
   * Queue ajax request
 * Function
