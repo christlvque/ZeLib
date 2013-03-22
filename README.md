@@ -3,10 +3,15 @@ ZeLib
 
 Simple Javascript library for common functions
 
-
+Summary
+---------
+* [Functions](#functions)
+* [ChangeLog](#changelog)
+* [License](#license)
 
 Functions
 ----------
+[[top]](#zelib)
 
 * HTML Table
   * Convert a JS Array into a html table (Array)
@@ -184,28 +189,33 @@ Functions
 
 ChangeLog
 ---------
+[[top]](#zelib)
 
-## v. 1.0-b.2
+### v. 1.0-b.2
 
   * Description translated in english
   * New functions organisation
+  * Add `toArray()` String prototype
+  * Fix bug on `trim()` function
 
-## v. 1.0-b.1
+### v. 1.0-b.1
+
 
   * Added jQuery, Flotr and tablesorter detection - _just throw an error, nothing else !_
 
-## v. 1.0-b.0
+### v. 1.0-b.0
 
-  * Add fn object
-  * Add math object
+  * Add `fn` object
+  * Add `math` object
 	
-## v. 1.0-a
-	
+### v. 1.0-a
+
    * First public release
 	
 	
 License
 -------
+[[top]](#zelib)
 
 Copyright (C) 2013 Liorzou Etienne
 	
