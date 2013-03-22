@@ -24,11 +24,23 @@
 	
 	-------------
 	
-	Releases :
+	Change log :
 	
-    v. 1.0-a    : first release
-	v. 1.0-b.0	: added 'fn' and 'math'
-	v. 1.0-b.1	: added jQuery, Flotr and tablesorter detection - just throw error, nothing else !
+	v. 1.0-b.2
+		- Description translated in english
+		- New functions organisation
+		- Add toArray() String prototype
+		- Fix bug on trim() function
+	
+	v. 1.0-b.1
+		- Added jQuery, Flotr and tablesorter detection - just throw an error, nothing else !
+	
+	v. 1.0-b.0
+		- Add fn object
+		- Add math object
+		
+	v. 1.0-a
+		- First public release
 	
 	-------------
 	
@@ -37,48 +49,58 @@
 
  
 /*
-	Bibliothèque JS pour certaines fonctions de base
+	JS Library for common functions
+	-------------
 	
-	* Tableaux HTML :
-		- Creation à partir d'un tableau JS (Array)
+	
+	* HTML Table :
+		- 'Convert' a JS Array into a html table (Array)
 			//TODO : make tableSorter2 optional
-		- Charge un tableau HTML dans un Array
+		- Load a html table inside a JS Array
+	* JS Array
+		- Sort a multidimensional Array by one dimension
+		- return one column of a 2-dimensional array
 	* URLs :
-		- Récupère les paramètres par id
-		- Redirection JS
-	* Graphiques :
+		- get parameters by id
+		- JS redirection
+	* Charts & Graphs :
 		- Pareto
-		- répartition temporelle
+		- time repartition
 			//TODO : fix xaxis -> show date-time values
 			//TODO : fix negatives values (bug ???)
-		- Répartions de valeurs
+		- values repartition
 			//TODO : fix bug when multiple redraw
 			//TODO : add option to draw vertical line
 	* Dates
-		- Converti une date au format "JJMMAAAA" en date JS				//
-		- converti une date au format "JJ/MM/AAAA" en date JS			//TODO : Group functions
-		- converti une date au format "JJ/MM/AAAA HH:MM:SS" en date JS	//
-		- Calcul de différence entre deux dates en jours, semaines, mois, années
-		- Ajoute un intervalle de temps à une date
-	* Tableaux JS
-		- Tri sur une dimension
-	* Chaines
-	    - Ajoute l'equivalent de la fonction VB 'Trim'
-	* Ajax
-		- Renvoie un tableau JS d'une requete ajax
+			//TODO : Group date convert functions
+		- Convert date from "JJMMAAAA" to JS date format
+		- Convert date from "JJ/MM/AAAA" to JS date format
+		- convert date from "JJ/MM/AAAA HH:MM:SS" to JS date format
+		- Calculate date difference in days, weeks, months or years
+		- Add a time interval to a JS date
+		- Get ISO week number 
+	* Strings
+	    - Add equivalent to 'Trim' VB-function
+		- Return a JS array from a string
 			//TODO : Add options
-		- Ajoute la possibilité de rendre les requêtes ajax synchrone (.queue)
+	* Ajax
+		- Queue ajax request
 			//TODO : Add clear queue option
-	* Fonctions
+	* Function
 		- type
 		- isArray
+			//TODO : Move to Array object
 		- isNumeric
 		- isSerie
+			//TODO : Move to Array object
 		- getDimOfArray
+			//TODO : Move to Array object
 		- roundNumber
 		- isPair
 		- noDoublons
+			//TODO : Move to Array object
 		- inArray
+			//TODO : Move to Array object
 		- alert
 		- error
 			//TODO: improve error tracking
@@ -1074,23 +1096,30 @@
 	
 	_ZeLib.string = {
 		/* Supprime les espaces au début et à la fin d'une chaine */
-		trim: function (myString) {
-			return myString.replace(/^\s+/g, '').replace(/\s+$/g, '');
-		}
-	};
+		trim: function () {
+			return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
+		},
+		
+		/* string to array */
+		toArray: function (lSep /* line separator */, cSep /* column separator */) {
+			var me = this.toString();
+			var tmpArray = me.split(lSep), i, tArray = new Array;
 
-	_ZeLib.ajax = {
-
-		toArray: function (str,lSep,cSep) {
-			var tmpArray = str.split(lSep), i, tArray = new Array;
-
-			for (i = 0; i < tmpArray.length - 1; i++) {
+			for (i = 0; i < tmpArray.length; i++) {
 				tArray[i] = tmpArray[i].split(cSep);
 			}
 
 			return tArray;
-		},
+		}
+	};
 
+	_ZeLib.ajax = {
+	
+		/*
+			queue ajax
+			-- Make ajax become synchrone !
+			-- Not in Javascript spirit, but can be useful.
+		*/
 		queue: function (ajaxOpts) {
 			var oldComplete = ajaxOpts.complete;
 			ajaxQueue.queue(function (next) {
@@ -1106,8 +1135,8 @@
 	};
 
     Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
-	
 	String.prototype.trim = _ZeLib.string.trim;
+	String.prototype.toArray = _ZeLib.string.toArray;
 	
 	if (!window.z) { window.z = _ZeLib; }
 })();
