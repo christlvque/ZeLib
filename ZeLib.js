@@ -1,4 +1,4 @@
-﻿/*
+/*
 	Copyright (C) 2013 Liorzou Etienne
 	
     This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,14 @@
 	
 	Change log :
 	
+	v. 1.0-b.3
+		- New date/time convertion function
+		- Deprecated old date/time convertion functions
+		- Updated RegExp for isNumeric function
+		- Added object whith global variables
+		
 	v. 1.0-b.2
-		- Description translated in english
+		- Description translated in english (yeah!)
 		- New functions organisation
 		- Add toArray() String prototype
 		- Fix bug on trim() function
@@ -43,8 +49,7 @@
 		- First public release
 	
 	-------------
-	
-	
+
 */
 
  
@@ -72,13 +77,17 @@
 			//TODO : fix bug when multiple redraw
 			//TODO : add option to draw vertical line
 	* Dates
-			//TODO : Group date convert functions
-		- Convert date from "JJMMAAAA" to JS date format
-		- Convert date from "JJ/MM/AAAA" to JS date format
-		- convert date from "JJ/MM/AAAA HH:MM:SS" to JS date format
+		- Convert date from user-defined date format to JS date format
+			//TODO : set new formats (actually : JJ[/]MM[/]AAAA[ HH[:MM[:SS]]])
 		- Calculate date difference in days, weeks, months or years
 		- Add a time interval to a JS date
 		- Get ISO week number 
+		
+		[Deprecated in 1.0-b.3]
+		- Convert date from "JJMMAAAA" to JS date format
+		- Convert date from "JJ/MM/AAAA" to JS date format
+		- convert date from "JJ/MM/AAAA HH:MM:SS" to JS date format
+		
 	* Strings
 	    - Add equivalent to 'Trim' VB-function
 		- Return a JS array from a string
@@ -130,11 +139,24 @@
 	if (jQuery == undefined) { throw 'jQuery was not detected !'; }
 	if (Flotr == undefined) { throw 'Flotr2 was not dectected !'; }
 	if (jQuery.tablesorter == undefined) { console.log('jQuery plugin \'tablesorter\' was not detected !'); }
-	
+
     var ajaxQueue = jQuery({});
+	
+	var 
+		core_toString = Object.prototype.toString,
+		core_indexOf = Array.prototype.indexOf;
 		
     var _ZeLib = {};
-		
+
+	_ZeLib.glob = {
+		// Most used RegExp
+		reg: {
+			posInt: /^\d+$/,
+			negInt: /^-\d+$/,
+			posNegInt: /^-{0,1}\d*\.{0,1}\d+$/
+		}
+	};
+	
 	_ZeLib.tableau = {
 		/* Lit le tableau HTML */
 		read: function (idTab) {
@@ -251,14 +273,14 @@
 			table.addClass(tClass);
 		}
 	};
-	
+
 	_ZeLib.array = {
 		sort: {
 			dim: function (index) {
 				return function (a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
 			}
 		},
-		
+
 		getColumn: function (tArray, dim) {
 			var a = new Array;
 			for (i = 0; i < tArray.length; i++) {
@@ -267,7 +289,7 @@
 			return a;
 		}
 	};
-		
+
 	_ZeLib.url = {
 		get: {
 			param: {
@@ -292,7 +314,7 @@
 			window.location.href = thePage + '#/' + lang;
 		}
 	};
-	
+
 	_ZeLib.fn = {
 		/* Retourne le type de l'argument */
 		type: function(obj) {
@@ -310,7 +332,7 @@
 
 		/* Teste si numérique */
 		isNumeric: function(obj) {
-			var numericExpression = /^(-|[0-9]|\.)+$/;
+			var numericExpression = _ZeLib.glob.reg.posNegInt;
 			if (String(obj).match(numericExpression)) {
 				return true;
 			} else {
@@ -356,8 +378,7 @@
 
 		/* Arrondi d'un nombre */
 		roundNumber: function(rnum, rlength) {
-			if (this.isNumeric(rnum) == false) {
-				return rnum; }
+			if (this.isNumeric(rnum) == false) { return rnum; }
 			var newnumber = Math.round(rnum * Math.pow(10, rlength)) / Math.pow(10, rlength);
 			return parseFloat(newnumber);
 		},
@@ -400,7 +421,7 @@
 
 		/* Envoie un message à l'utilisateur (Type E.T.-téléphone-maison) */
 		alert: function(msg) {
-			console.log('Message stats.js : \n' + msg);
+			console.log('Message stats.js : \n' + msg); 
 		},
 
 		/* 'Jete' une erreur */
@@ -410,13 +431,13 @@
 			// throw new Error(msg);
 		}
 	};
-	
+
 	_ZeLib.math = {
 		loiNormale: function(value, esp, ect) {
 			var tempExp,
 				sqrt2pi = Math.sqrt(2 * Math.PI),
 				fOut = 0;
-			
+
 			value = parseFloat(value);
 			esp = parseFloat(esp);
 			ect = parseFloat(ect);
@@ -426,19 +447,19 @@
 
 			return fOut;
 		},
-		
+
 		min: function (aArray) {
 			var i, min = aArray[0];
 			for (i=0;i<aArray.length;i++) { if (aArray[i] < min) { min = aArray[i]; } }
 			return min;
 		},
-		
+
 		max: function (aArray) {
 			var i, max = aArray[0];
 			for (i=0;i<aArray.length;i++) { if (aArray[i] > max) { max = aArray[i]; } }
 			return max;
 		},
-				
+
 		moyenne: function(aArray) {
 			var nbElem = 0, /* Nombre d'éléments dans le tableau */
 			sum = 0, /* Somme de tous les éléments */
@@ -507,18 +528,18 @@
 			fEcTp = Math.sqrt(fVar);
 			return fEcTp;
 		},
-		
+
 		/* Variance en % */
 		variance_percent: function (aArray) {
 			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (R&R)'); }
-			
+
 			var max = this.max(aArray),
 				min = this.min(aArray);
 				stDev = this.variance(aArray);
-				
+
 			return parseFloat(100 * stDev/(max-min));
 		},
-		
+
 		/* Calcul du CpK */
 		cpk: function (aArray, tolMin, tolMax) {
 			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (CpK)'); }
@@ -560,17 +581,17 @@
 				On calcule donc les fréquences
 				d'apparition de toutes les valeurs distinctes
 			*/
-		
+
 			var aFreq = [[],[],[]], /* Tableau des fréquences */
 				max, /* écart max */
 				sizeOf, /* Taille du tableau */
 				normal, /* contient la sortie */
 				pos, i;
-				
+
 			if (!_ZeLib.fn.isSerie) { return false; }
 
 			sizeOf = aArray.length
-			
+
 			/* Calcul des fréquences */
 			for (i = 0; i < sizeOf; i++) {
 				pos = _ZeLib.fn.inArray(aArray[i], aFreq[0]);
@@ -591,12 +612,12 @@
 									aFreq[0][i],
 									this.moyenne(aFreq[0]),
 									this.ecartType(aFreq[0])) / aFreq[0].length;
-				
+
 				if (Math.abs(aFreq[2][i] - aFreq[1][i]) > max) { max = Math.abs(aFreq[2][i] - aFreq[1][i]); }
 			}
-			
+
 			normal = false;
-			
+
 			if (sizeOf < 41) {
 				/*	Table des valeurs critiques
 					du test de Kolmogorov-Smirnov pour un échantillon
@@ -642,295 +663,406 @@
 					Equation de la courbe de tendance : 1.2349*max^(-0.48)
 					Coeff R² = 0.9999
 				*/
-				
+
 				if (max > (1.2349 * Math.pow(sizeOf,-0.48))) { normal = false; } else { normal = true }
 			} else {
 				/* 	Pour sizeOf >= 40
 					Les valeurs critiques du test sont déterminées par la formule :
 					1.36 * racine (N)
 				*/
-				
+
 				if (max > (1.36 * Math.sqrt(sizeOf))) { normal = false; } else { normal = true }
 			}
-			
+
 			return normal;
 		}
 
 	};
-	
+
 	_ZeLib.graphs = {
-            /* Pareto */
-            pareto: {
-                /* Options génériques */
-                options: {
-                    selection: { mode: 'y', fps: 30 },
-                    bars: {
-                        show: true,
-                        horizontal: true,
-                        shadowSize: 0,
-                        barWidth: 1
-                    },
-                    yaxis: {
-                        min: 0,
-                        autoscaleMargin: 1,
-                        showLabels: true
-                    },
-                    xaxis: {
-                        autoscale: true
-                    },
-                    legend: {
-                        position: 'se',
-                        backgroundColor: '#fff'
-                    }
-                },
+		/* Pareto */
+		pareto: {
+			/* Options génériques */
+			options: {
+				selection: { mode: 'y', fps: 30 },
+				bars: {
+					show: true,
+					horizontal: true,
+					shadowSize: 0,
+					barWidth: 1
+				},
+				yaxis: {
+					min: 0,
+					autoscaleMargin: 1,
+					showLabels: true
+				},
+				xaxis: {
+					autoscale: true
+				},
+				legend: {
+					position: 'se',
+					backgroundColor: '#fff'
+				}
+			},
 
-                /* Dessine le graph */
-                draw: function (id, dArray, tFormat, opts) {
+			/* Dessine le graph */
+			draw: function (id, dArray, tFormat, opts) {
 
-                    function internal_draw_pa(id, dArray, tFormat, opts) {
-                        var o = Flotr._.extend(
-								Flotr._.clone(_ZeLib.graphs.pareto.options),
-								opts || {});
+				function internal_draw_pa(id, dArray, tFormat, opts) {
+					var o = Flotr._.extend(
+							Flotr._.clone(_ZeLib.graphs.pareto.options),
+							opts || {});
 
-                        oM = { mouse: { track: true, relative: true, trackFormatter: tFormat} };
-                        o = Flotr._.extend(
-									Flotr._.clone(o),
-									oM || {});
+					oM = { mouse: { track: true, relative: true, trackFormatter: tFormat} };
+					o = Flotr._.extend(
+								Flotr._.clone(o),
+								oM || {});
 
-                        var graph_c = document.getElementById(id);
+					var graph_c = document.getElementById(id);
 
-                        return Flotr.draw(graph_c, [{
-                            data: dArray,
-                            label: 'Pareto',
-                            markers: {
-                                show: true,
-                                position: 'rm',
-                                fontSize: 9,
-                                labelFormatter: tFormat,
-                                horizontal: true
-                            }
-                        }], o);
-                    }
-
-                    if (!tFormat) { tFormat = function (obj) { return 'x=' + obj.x + ' y=' + obj.y; }; }
-
-                    internal_draw_pa(id, dArray, tFormat, opts);
-
-                    Flotr.EventAdapter.observe(graph_c, 'flotr:select', function (area) {
-                        graph = internal_draw_pa(id, dArray, tFormat, {
-                            xaxis: { autoscale: true },
-                            yaxis: { min: area.y1, max: area.y2, autoscaleMargin: 1, showLabels: true /*, tickFormatter: TickPareto */ }
-                        });
-                    });
-
-                    Flotr.EventAdapter.observe(graph_c, 'flotr:click', function () { internal_draw_pa(id, dArray, tFormat); });
-                }
-            },
-
-			/* Graph de répartion temporelle */
-            histo: {
-                opt: {
-                    xaxis: {
-                        mode: 'time',
-                        labelsAngle: 45
-                    },
-                    yaxis: {
-                        autoscale: true,
-                        autoscaleMargin: 5
-                    },
-                    selection: {
-                        mode: 'x'
-                    },
-					legend : {
-						position : 'ne'
-					},
-                    HtmlText: false,
-                    mouse: {
-                        track: true,
-                        relative: true
-                    }
-                },
-
-                draw: function (arg) {
-                    /*
-                    arg.data    :   tableau de données
-                    arg.cols    :   colonnes à utiliser, format : { x: 2, y: 0 } [facultatif - par défaut { x: 0, y: 1 }]
-                    arg.cont    :   id du container
-                    */
-
-                    if (arg.cols == undefined) { arg.cols = { x: 0, y: 1 }; }
-                    if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
-                    if (arg.data == undefined) { throw 'histo.draw: no data'; }
-					if (arg.title == undefined) { arg.title = 'Serie 1'; }
-					if (arg.timeProportional == undefined) { arg.timeProportional = true; }
-                    var i;
-                    var datArr = new Array;
-
-                    for (i = 0; i < arg.data.length; i++) {
-						if (arg.timeProportional == false) {
-							datArr.push([i, arg.data[i][arg.cols.y]]);
-						} else {
-							datArr.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y]]);
+					return Flotr.draw(graph_c, [{
+						data: dArray,
+						label: 'Pareto',
+						markers: {
+							show: true,
+							position: 'rm',
+							fontSize: 9,
+							labelFormatter: tFormat,
+							horizontal: true
 						}
-                    }
-                    var container = document.getElementById(arg.cont);
-                    var options = this.opt;
-                    var d1 = datArr;
-                    var graph_h;
+					}], o);
+				}
 
-                    options.xaxis.margin = 30;
-					options.mouse.trackFormatter = function (t) { return arg.data[parseInt(t.x,10)][arg.cols.x] + ' - ' + t.y; }
+				if (!tFormat) { tFormat = function (obj) { return 'x=' + obj.x + ' y=' + obj.y; }; }
+
+				internal_draw_pa(id, dArray, tFormat, opts);
+
+				Flotr.EventAdapter.observe(graph_c, 'flotr:select', function (area) {
+					graph = internal_draw_pa(id, dArray, tFormat, {
+						xaxis: { autoscale: true },
+						yaxis: { min: area.y1, max: area.y2, autoscaleMargin: 1, showLabels: true /*, tickFormatter: TickPareto */ }
+					});
+				});
+
+				Flotr.EventAdapter.observe(graph_c, 'flotr:click', function () { internal_draw_pa(id, dArray, tFormat); });
+			}
+		},
+
+		/* Graph de répartion temporelle */
+		histo: {
+			opt: {
+				xaxis: {
+					mode: 'time',
+					labelsAngle: 45
+				},
+				yaxis: {
+					autoscale: true,
+					autoscaleMargin: 5
+				},
+				selection: {
+					mode: 'x'
+				},
+				legend : {
+					position : 'ne'
+				},
+				HtmlText: false,
+				mouse: {
+					track: true,
+					relative: true
+				}
+			},
+
+			draw: function (arg) {
+				/*
+				arg.data    :   tableau de données
+				arg.cols    :   colonnes à utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par défaut { x: 0, y: 1 }]
+				arg.cont    :   id du container
+				*/
+
+				if (arg.cols == undefined) { arg.cols = { x: 0, y: 1, y2: undefined, y3: undefined }; }
+				if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
+				if (arg.data == undefined) { throw 'histo.draw: no data'; }
+				if (arg.title == undefined) { arg.title = 'Serie 1'; }
+				if (arg.title2 == undefined) { arg.title2 = 'Serie 2'; }
+				if (arg.title3 == undefined) { arg.title3 = 'Serie 3'; }
+				
+				if (arg.timeProportional == undefined) { arg.timeProportional = true; }
+				var i;
+				var datArr = new Array;
+				var datArr_2 = new Array;
+				var datArr_3 = new Array;
+				
+				for (i = 0; i < arg.data.length; i++) {
 					if (arg.timeProportional == false) {
-						options.xaxis.mode = 'normal';
-					}
-                    // Draw graph with default options, overwriting with passed options
-                    function drawGraph(opts) {
-                        // Clone the options, so the 'options' variable always keeps intact.
-                        o = Flotr._.extend(Flotr._.clone(options), opts || {});
-                        // Return a new graph.
-                        return Flotr.draw(container, [{data: d1, label: arg.title}], o);
-                    }
-
-                    graph_h = drawGraph();
-
-                    Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
-                        // Draw selected area
-                        graph_h = drawGraph({
-                            xaxis: { min: area.x1, max: area.x2, mode: 'time', labelsAngle: 45, margin: 30 },
-                            yaxis: { min: area.y1, max: area.y2 }
-                        });
-                    });
-                    // When graph is clicked, draw the graph with default area.
-                    Flotr.EventAdapter.observe(container, 'flotr:click', function () { graph_h = drawGraph(); });
-                }
-            },
-			
-			/* Graph de répartion de valeurs */
-            repart: {
-                opt: {
-                    bars: {
-                        show: true,
-                        horizontal: false,
-                        shadowSize: 0,
-                        barWidth: 0.5
-                    },
-                    mouse: {
-                        track: true,
-                        relative: true,
-                        trackDecimals: 4,
-                        trackFormatter: function (t) { return parseInt(t.y, 10); }
-                    },
-                    yaxis: {
-                        min: 0,
-                        autoscaleMargin: 1
-                    },
-                    xaxis: {
-                        labelsAngle: 45
-                    },
-					legend : {
-						position : 'ne'
-					},
-                    selection: {
-                        mode: 'x'
-                    },
-                    grid: {
-                        verticalLines: false
-                    },
-                    HtmlText: false
-                },
-
-                draw: function (arg) {
-					//TODO : fix bug when multiple redraw
-					//TODO : add option to draw vertical line
-                    /*
-						arg.data    :   tableau de données
-						arg.cols    :   colonnes à utiliser, format : { x: 0 } [facultatif - par défaut { x: 0 }]
-						arg.cont    :   id du container
-						arg.title	: 	titre du graphique
-						arg.vertical:	array of values for vertical lines - formart : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]
-                    */
-					var withVert = true;
-					
-                    if (arg.cols == undefined) { arg.cols = { x: 0 }; }
-                    if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
-                    if (arg.data == undefined) { throw 'histo.draw: no data'; }
-                    if (arg.div == undefined || arg.div == 0) { arg.div = 10; }
-					if (arg.title == undefined) { arg.title = 'Serie 1'; }
-					if (arg.vertical == undefined) { withVert = false; }
-					
-                    //Flotr.destroy();
-                    var i;
-                    var tArr = new Array;
-                    for (i = 0; i < arg.data.length; i++) {
-                        tArr.push(parseFloat(arg.data[i]));
-                    }
-
-                    var min = $$.math.min(tArr);
-                    var max = $$.math.max(tArr);
-                    var ec = (max - min) / (arg.div - 1);
-                    var datArr = new Array;                    
-
-                    for (i = 0; i < arg.div; i++) {
-                        datArr.push([min + i * ec, 0]);
-                    }
-
-                    for (i = 0; i < tArr.length; i++) {
-                        datArr[parseInt((tArr[i] - min) / ec)][1]++;
-                    }
-
-                    var container = document.getElementById(arg.cont);
-                    container.innerHTML = '';
-                    
-                    var options = this.opt;
-                    var d1 = datArr;
-					
-					options.yaxis.min = 0;
-					options.yaxis.max = _ZeLib.math.max(_ZeLib.array.getColumn(d1,1))*(1.1);
-					
-					options.bars.barWidth = ec;
-                    options.xaxis.min = min - ec / 2;
-                    options.xaxis.max = max - ec / 2;
-					options.xaxis.margin = 30;
-					
-					var dataArray = [{data: d1, label: arg.title}];
-					
-					var vertValue, vertName;
-					/* Ajout des lignes verticales */
-					if (withVert == true) {
-						for (i=0;i<arg.vertical.length;i++) {
-							vertValue = arg.vertical[i].data;
-							vertName = arg.vertical[i].name;
-							
-							dataArray.push({data: [[vertValue, -1],[vertValue, 1000000]], label: vertName, lines: {show: true}, bars: {show: false}});
+						datArr.push([i, arg.data[i][arg.cols.y]]);
+						if (arg.cols.y2 != undefined) {
+							if (_ZeLib.fn.isNumeric(arg.data[i][arg.cols.y2])) {
+								datArr_2.push([i, arg.data[i][arg.cols.y2]]);
+							}
+						}
+						if (arg.cols.y3 != undefined) {
+							if (_ZeLib.fn.isNumeric(arg.data[i][arg.cols.y3])) {
+								datArr_3.push([i, arg.data[i][arg.cols.y3]]);
+							}
+						}
+					} else {
+						datArr.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y]]);
+						if (arg.cols.y2 != undefined) {
+							if (_ZeLib.fn.isNumeric(arg.data[i][arg.cols.y2])) {
+								datArr_2.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y2]]);
+							}
+						}
+						if (arg.cols.y3 != undefined) {
+							if (_ZeLib.fn.isNumeric(arg.data[i][arg.cols.y3])) {
+								datArr_3.push([arg.data[i][arg.cols.x], arg.data[i][arg.cols.y3]]);
+							}
 						}
 					}
-					
-                    // Draw graph with default options, overwriting with passed options
-                    function drawGraph(opts) {
-                        // Clone the options, so the 'options' variable always keeps intact.
-                        o = Flotr._.extend(Flotr._.clone(options), opts || {});
-                        // Return a new graph.
-                        Flotr.draw(container, dataArray, o);
-                    }
+				}
+				
+				var container = document.getElementById(arg.cont);
+				var options = this.opt;
+				var d1 = datArr;
+				var d2 = datArr_2;
+				var d3 = datArr_3;
+				
+				var data = new Array;
+				
+				data.push({data: d1, label: arg.title});
+				
+				if (arg.cols.y2 != undefined) {
+					data.push({data: d2, label: arg.title2});
+					if (arg.cols.y3 != undefined) {
+						data.push({data: d3, label: arg.title3});
+					}
+				}
+				var graph_h;
 
-                    drawGraph();
+				options.xaxis.margin = 30;
+				options.mouse.trackFormatter = function (t) { return arg.data[parseInt(t.x,10)][arg.cols.x] + ' - ' + t.y; }
+				if (arg.timeProportional == false) {
+					options.xaxis.mode = 'normal';
+				}
+				// Draw graph with default options, overwriting with passed options
+				function drawGraph(opts) {
+					// Clone the options, so the 'options' variable always keeps intact.
+					o = Flotr._.extend(Flotr._.clone(options), opts || {});
+					// Return a new graph.
+					return Flotr.draw(container, data, o);
+				}
 
-                    Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
-                        // Draw selected area
-                        drawGraph({
-                            xaxis: { min: area.x1, max: area.x2, labelsAngle: 45, margin: 30 },
-                            yaxis: { min: area.y1, max: area.y2 }
-                        });
-                    });
-                    // When graph is clicked, draw the graph with default area.
-                    Flotr.EventAdapter.observe(container, 'flotr:click', function () { drawGraph(); });
+				graph_h = drawGraph();
 
-                }
-            }
+				Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
+					// Draw selected area
+					graph_h = drawGraph({
+						xaxis: { min: area.x1, max: area.x2, mode: 'time', labelsAngle: 45, margin: 30 },
+						yaxis: { min: area.y1, max: area.y2 }
+					});
+				});
+				// When graph is clicked, draw the graph with default area.
+				Flotr.EventAdapter.observe(container, 'flotr:click', function () { graph_h = drawGraph(); });
+			}
+		},
+
+		/* Graph de répartion de valeurs */
+		repart: {
+			opt: {
+				bars: {
+					show: true,
+					horizontal: false,
+					shadowSize: 0,
+					barWidth: 0.5
+				},
+				mouse: {
+					track: true,
+					relative: true,
+					trackDecimals: 4,
+					trackFormatter: function (t) { return parseInt(t.y, 10); }
+				},
+				yaxis: {
+					min: 0,
+					autoscaleMargin: 1
+				},
+				xaxis: {
+					labelsAngle: 45
+				},
+				legend : {
+					position : 'ne'
+				},
+				selection: {
+					mode: 'x'
+				},
+				grid: {
+					verticalLines: false
+				},
+				HtmlText: false
+			},
+
+			draw: function (arg) {
+				//TODO : fix bug when multiple redraw
+				//TODO : add option to draw vertical line
+				/*
+					arg.data    :   tableau de données
+					arg.cols    :   colonnes à utiliser, format : { x: 0 } [facultatif - par défaut { x: 0 }]
+					arg.cont    :   id du container
+					arg.title	: 	titre du graphique
+					arg.vertical:	array of values for vertical lines - formart : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]
+				*/
+				var withVert = true;
+
+				if (arg.cols == undefined) { arg.cols = { x: 0 }; }
+				if (arg.cont == undefined) { throw 'histo.draw: container not set'; }
+				if (arg.data == undefined) { throw 'histo.draw: no data'; }
+				if (arg.div == undefined || arg.div == 0) { arg.div = 10; }
+				if (arg.title == undefined) { arg.title = 'Serie 1'; }
+				if (arg.vertical == undefined) { withVert = false; }
+				
+				//Flotr.destroy();
+				var i;
+				var tArr = new Array;
+				for (i = 0; i < arg.data.length; i++) {
+					tArr.push(parseFloat(arg.data[i]));
+				}
+
+				var min = $$.math.min(tArr);
+				var max = $$.math.max(tArr);
+				var ec = (max - min) / (arg.div - 1);
+				var datArr = new Array;                    
+
+				for (i = 0; i < arg.div; i++) {
+					datArr.push([min + i * ec, 0]);
+				}
+
+				for (i = 0; i < tArr.length; i++) {
+					datArr[parseInt((tArr[i] - min) / ec)][1]++;
+				}
+
+				var container = document.getElementById(arg.cont);
+				container.innerHTML = '';
+				
+				var options = this.opt;
+				var d1 = datArr;
+
+				options.yaxis.min = 0;
+				options.yaxis.max = _ZeLib.math.max(_ZeLib.array.getColumn(d1,1))*(1.1);
+
+				options.bars.barWidth = ec;
+				if (arg.min == undefined) { options.xaxis.min = min - ec / 2; }
+				else { options.xaxis.min = arg.min; }
+				
+				if (arg.max == undefined) { options.xaxis.max = max - ec / 2 + ec; }
+				else { options.xaxis.max = arg.max; }
+				
+				options.xaxis.margin = 30;
+
+				var dataArray = [{data: d1, label: arg.title}];
+
+				var vertValue, vertName;
+				/* Ajout des lignes verticales */
+				if (withVert == true) {
+					for (i=0;i<arg.vertical.length;i++) {
+						vertValue = arg.vertical[i].data;
+						vertName = arg.vertical[i].name;
+
+						dataArray.push({data: [[vertValue, -1],[vertValue, 1000000]], label: vertName, lines: {show: true}, bars: {show: false}});
+					}
+				}
+
+				// Draw graph with default options, overwriting with passed options
+				function drawGraph(opts) {
+					// Clone the options, so the 'options' variable always keeps intact.
+					o = Flotr._.extend(Flotr._.clone(options), opts || {});
+					// Return a new graph.
+					Flotr.draw(container, dataArray, o);
+				}
+
+				drawGraph();
+
+				Flotr.EventAdapter.observe(container, 'flotr:select', function (area) {
+					// Draw selected area
+					drawGraph({
+						xaxis: { min: area.x1, max: area.x2, labelsAngle: 45, margin: 30 },
+						yaxis: { min: area.y1, max: area.y2 }
+					});
+				});
+				// When graph is clicked, draw the graph with default area.
+				Flotr.EventAdapter.observe(container, 'flotr:click', function () { drawGraph(); });
+
+			}
+		}
 	};
 
     _ZeLib.dates = {
-		dateCode2js: function (dCode) {
+		// JJMMAAAA				- 8
+		// JJ/MM/AAAA			- 10
+		// JJ/MM/AAAA HH:MM:SS	- 19
+		
+		// Format FR
+		defaultDateFormat: 'JJ/MM/AAAA HH:MM:SS',
+		
+		// >> JJ[/]MM[/]AAAA[ HH[:MM[:SS]]]
+		toJSDate: function (dDate, dCode /* UNUSED */) {
+			var d_day, d_month, d_year, d_hour, d_min, d_second;
+			
+			var date, time;
+			
+			// TODO : USE THIS ! :)
+			if (dCode == undefined) {
+				dCode = this.defaultDateFormat;
+			}
+			
+			// SWITCH CASE POSITION OF ITEMS
+			
+			date = dDate.split(' ')[0];
+			time = dDate.split(' ')[1];
+			
+			d_day = date.split('/')[0];
+			d_month = date.split('/')[1];
+			d_year = date.split('/')[2];
+			
+			if (time != undefined) {
+				d_hour = time.split(':')[0];
+				d_min = time.split(':')[1];
+				d_second = time.split(':')[2];
+			}
+			
+			if (d_month == undefined && d_day.length == 8) {
+				d_year = d_day.substring(4, 10);
+				d_month = d_day.substring(2, 4);
+				d_day = d_day.substring(0, 2);
+			}
+			
+			var check = false;
+			
+			// VERIFICATION OF DATE VALIDITY
+			// ADD A NEW LINE TO ADD A NEW CHECK
+			check = check || (d_day == undefined || d_day.length != 2);
+			check = check || (d_month == undefined || d_month.length != 2);
+			check = check || (d_year == undefined || d_year.length != 4);
+			check = check || (d_hour != undefined && d_hour.length != 2);
+			check = check || (d_min != undefined && d_min.length != 2);
+			check = check || (d_second != undefined && d_second.length != 2);
+			
+			if (check) { _ZeLib.fn.error('Input error'); return false; }
+			// END CHECK
+			
+			d_day = parseInt(d_day, 10);
+			d_month = parseInt(d_month, 10);
+			d_year = parseInt(d_year, 10);
+			
+			if (d_hour != undefined) { d_hour = parseInt(d_hour, 10); } else { d_hour = 0; }
+			if (d_min != undefined) { d_min = parseInt(d_min, 10); } else { d_min = 0; }
+			if (d_second != undefined) { d_second = parseInt(d_second, 10); } else { d_second = 0; }
+			
+			var jsDate = new Date(d_year, d_month - 1, d_day, d_hour, d_min, d_second);
+			//_ZeLib.fn.alert(jsDate);
+			return jsDate;
+		},
+		
+		/* DO NOT USE AFTER 1.0-b.3 */
+		dateCode2js: function (dCode) {	
+			_ZeLib.fn.alert('Warning : \'dateCode2js\' is obsolete !');
 			var dD =  parseInt(dCode.substring(0, 2),10),
 				dM =  parseInt(dCode.substring(2, 4),10),
 				dY =  parseInt(dCode.substring(4, 10),10);
@@ -939,7 +1071,9 @@
 			return jsDate;
 		},
 		
+		/* DO NOT USE AFTER 1.0-b.3 */
 		fr2js: function (frDate) {
+			_ZeLib.fn.alert('Warning : \'fr2js\' is obsolete !');
 			var frDate_j = parseInt(frDate.substring(0, 2), 10),
 				frDate_m = parseInt(frDate.substring(3, 5), 10),
 				frDate_a = parseInt(frDate.substring(6, 10), 10);
@@ -950,7 +1084,9 @@
 			return jsDate;
 		},
 		
+		/* DO NOT USE AFTER 1.0-b.3 */
 		fr2jstime: function (frDate) {
+			_ZeLib.fn.alert('Warning : \'fr2jstime\' is obsolete !');
 			var frDate_j = parseInt(frDate.substring(0, 2), 10),
 				frDate_m = parseInt(frDate.substring(3, 5), 10),
 				frDate_a = parseInt(frDate.substring(6, 10), 10),
@@ -963,7 +1099,7 @@
 
 			return jsDate;
 		},
-		
+
 		diff: {
 			inDays: function (d1, d2) {
 				var t2 = d2.getTime();
@@ -992,7 +1128,7 @@
 				return d2.getFullYear() - d1.getFullYear();
 			}
 		},
-		
+
 		dateAddExtension: function (p_Interval, p_Number) {
 			var thing = new String();
 			p_Interval = p_Interval.toLowerCase();
@@ -1062,7 +1198,7 @@
 			}
 			return this;
 		},
-		
+
 		/* Retourne le numéro de semaine (ISO) */
 		numSem: function (aaaa, mm, jj) {
 			mm = mm - 1;
@@ -1072,34 +1208,34 @@
 				ListeMois = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
 				TotalJour = 0,
 				JourDebutAn;
-				
+
 			if (annee % 4 == 0 && annee % 100 != 0 || annee % 400 == 0) { ListeMois[1] = 29 };
 			for (cpt = 0; cpt < mm; cpt++) { TotalJour += ListeMois[cpt]; }
-			
+
 			TotalJour += jj;
 			DebutAn = new Date(annee, 0, 1);
 			JourDebutAn = DebutAn.getDay();
-			
+
 			if (JourDebutAn == 0) { JourDebutAn = 7 };
-			
+
 			TotalJour -= 8 - JourDebutAn;
 			NumSemaine = 1;
 			NumSemaine += Math.floor(TotalJour / 7);
-			
+
 			if (TotalJour % 7 != 0) { NumSemaine += 1 };
 			if (JourDebutAn > 4) { NumSemaine -= 1 };
 			if (NumSemaine == 0) { NumSemaine = 53 };
-			
+
 			return (NumSemaine);
 		}
 	};
-	
+
 	_ZeLib.string = {
 		/* Supprime les espaces au début et à la fin d'une chaine */
 		trim: function () {
 			return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
 		},
-		
+
 		/* string to array */
 		toArray: function (lSep /* line separator */, cSep /* column separator */) {
 			var me = this.toString();
@@ -1114,7 +1250,7 @@
 	};
 
 	_ZeLib.ajax = {
-	
+
 		/*
 			queue ajax
 			-- Make ajax become synchrone !
@@ -1137,6 +1273,6 @@
     Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
 	String.prototype.trim = _ZeLib.string.trim;
 	String.prototype.toArray = _ZeLib.string.toArray;
-	
+
 	if (!window.z) { window.z = _ZeLib; }
 })();
