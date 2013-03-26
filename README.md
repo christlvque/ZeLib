@@ -191,6 +191,16 @@ ChangeLog
 ---------
 [[top]](#zelib)
 
+
+### v. 1.0-b.3
+
+
+  * New date/time convertion function
+  * Deprecated old date/time convertion functions
+  * Updated RegExp for isNumeric function
+  * Added object whith global variables
+
+
 ### v. 1.0-b.2
 
   * Description translated in english
