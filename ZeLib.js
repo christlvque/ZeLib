@@ -26,24 +26,37 @@
 	
 	Change log :
 	
+	v. 1.0-b.4
+		- [Add] function for filtering a JS Array
+		- [Add] JS Date test
+		- [Add] clone_object function
+		- [Add] vb function call by ajax
+		- [Add] add parameters to url
+		- [Add] string prototype capitalize
+		- [Add] warning function
+		- [Update] Error throw function
+		- [Update] Get week number function -> Accept a JS date in input
+		- [FIX] bad reference to function in repartion graph drawing
+		- [FIX] bug with negative value in time repartion graph drawing
+		
 	v. 1.0-b.3
-		- New date/time convertion function
-		- Deprecated old date/time convertion functions
-		- Updated RegExp for isNumeric function
-		- Added object whith global variables
+		- [Add] date/time convertion function
+		- [Add] object whith global variables
+		- [Update] RegExp for isNumeric function
+		- [Deprecated] old date/time convertion functions
 		
 	v. 1.0-b.2
-		- Description translated in english (yeah!)
-		- New functions organisation
-		- Add toArray() String prototype
-		- Fix bug on trim() function
+		- [Add] functions organisation
+		- [Add] toArray() String prototype
+		- [Update] Description translated in english (yeah!)
+		- [Fix] bug on trim() function
 	
 	v. 1.0-b.1
-		- Added jQuery, Flotr and tablesorter detection - just throw an error, nothing else !
+		- [Add] jQuery, Flotr and tablesorter detection - just throw an error, nothing else !
 	
 	v. 1.0-b.0
-		- Add fn object
-		- Add math object
+		- [Add] fn object
+		- [Add] math object
 		
 	v. 1.0-a
 		- First public release
@@ -57,7 +70,8 @@
 	JS Library for common functions
 	-------------
 	
-	
+	* Global use Functions
+		- clone object
 	* HTML Table :
 		- 'Convert' a JS Array into a html table (Array)
 			//TODO : make tableSorter2 optional
@@ -65,14 +79,16 @@
 	* JS Array
 		- Sort a multidimensional Array by one dimension
 		- return one column of a 2-dimensional array
+		- filter an array on a condition
 	* URLs :
 		- get parameters by id
 		- JS redirection
+		- Add param to URLs
+			//TODO : deal with add param to with-param-url
 	* Charts & Graphs :
 		- Pareto
 		- time repartition
 			//TODO : fix xaxis -> show date-time values
-			//TODO : fix negatives values (bug ???)
 		- values repartition
 			//TODO : fix bug when multiple redraw
 			//TODO : add option to draw vertical line
@@ -82,6 +98,7 @@
 		- Calculate date difference in days, weeks, months or years
 		- Add a time interval to a JS date
 		- Get ISO week number 
+		- Test is JS Date
 		
 		[Deprecated in 1.0-b.3]
 		- Convert date from "JJMMAAAA" to JS date format
@@ -92,9 +109,12 @@
 	    - Add equivalent to 'Trim' VB-function
 		- Return a JS array from a string
 			//TODO : Add options
+		- Capitalize
 	* Ajax
 		- Queue ajax request
 			//TODO : Add clear queue option
+		- Call a vb function
+			//TODO : fix asp.net call -> no file name should be needed
 	* Function
 		- type
 		- isArray
@@ -113,8 +133,10 @@
 		- alert
 		- error
 			//TODO: improve error tracking
+		- warning function
 	* Maths
 		- loiNormale
+			//TODO : fix "random" bug with output
 		- min
 		- max
 		- moyenne
@@ -131,6 +153,7 @@
 			
 	//GLOBAL TODO
 		- improve documentation & comments !!
+		- add a function for getting Cp
  */
  
 
@@ -145,176 +168,32 @@
 	var 
 		core_toString = Object.prototype.toString,
 		core_indexOf = Array.prototype.indexOf;
-		
-    var _ZeLib = {};
-
-	_ZeLib.glob = {
-		// Most used RegExp
-		reg: {
-			posInt: /^\d+$/,
-			negInt: /^-\d+$/,
-			posNegInt: /^-{0,1}\d*\.{0,1}\d+$/
+	
+	function clnObj (objet_reference) {
+		for (var i in objet_reference) {
+			if (typeof objet_reference[i]=="object" && typeof objet_reference[i].src!="undefined") {
+				//Object image
+				this[i]=new Image();
+				this[i].src=objet_reference[i].src;
+			} else {
+				if (typeof objet_reference[i]=="object" && typeof objet_reference[i].src=="undefined" && typeof objet_reference.length=="number") {
+					//Object Array
+					this[i]=new Array();
+					for (var j=0; j<objet_reference[i].length; j++) { this[i][j]=new clnObj(objet_reference[i][j]); }
+				} else {
+					if (typeof objet_reference[i]=="object") { /* Other Object */ this[i] = new clnObj(objet_reference[i]); }
+					else { /* Not an Object */ this[i] = objet_reference[i]; }
+				}
+			}
 		}
+	}
+	
+    var _ZeLib = {};
+	
+	_ZeLib.fx = {
+		clone_object: clnObj 
 	};
 	
-	_ZeLib.tableau = {
-		/* Lit le tableau HTML */
-		read: function (idTab) {
-			var $table = jQuery('#' + idTab),
-				$headerCells = $table.find("thead th"),
-				$rows = $table.find("tbody tr"),
-				headers = [],
-				rows = [];
-
-			$headerCells.each(function (k, v) {
-				headers[headers.length] = jQuery(this).text();
-			});
-
-			$rows.each(function (row, v) {
-				jQuery(this).find("td").each(function (cell, v) {
-					if (typeof rows[row] === 'undefined') rows[row] = [];
-					rows[row][cell] = jQuery(this).text();
-				});
-			});
-
-			return rows;
-		},
-
-		/* Génère un tableau HTML */
-		write: function (tID, cID, tArray /* , tHeaders, tClass */) {
-			var i = 0,
-				j = 0;
-
-			var container = jQuery('#' + cID),
-				tHeader = undefined, /* Textes des en-têtes */
-				tClass = '', /* Classes CSS du tableau */
-				table, /* tableau HTML */
-				tbHeader, /* en-tete du tableau HTML */
-				tbBody, /* corps du tableau HTML */
-				tbTR, /* <tr> HTML */
-				tbTD; /* <td> HTML */
-
-			/* Gestion des parametres facultatifs */
-			if (arguments[3]) { tHeader = arguments[3]; }
-			if (arguments[4]) { tClass = arguments[4]; }
-
-			/* Détermine si le conteneur existe */
-			if (container == undefined) {
-				alert('le div conteneur n\'existe pas !');
-				return false;
-			}
-
-			/* vide le conteneur */
-			container.html('');
-
-			/* Détermine si 'tID' est déjà utilisé */
-			if (jQuery('#' + tID).length > 0) {
-				alert('l\'ID utilisé pour le tableau existe déjà !');
-				return false;
-			}
-
-			/* Détermine si 'tArray' est un tableau javascript */
-			if (jQuery.isArray(tArray) == false) {
-				alert('le parametre n\'est pas un tableau !');
-				return false;
-			}
-
-			/* Determine si un tableau d'en-tete est passé en parametre */
-			if (tHeader) {
-				if (jQuery.isArray(tHeader) == false) {
-					alert('le parametre d\'en-tete n\'est pas un tableau !');
-					return false;
-				}
-			}
-
-			/* Défini la table */
-			container.append('<table id="' + tID + '"></table>');
-			table = jQuery('#' + tID);
-
-			/* Si tHeader est défini */
-			if (tHeader != undefined) {
-				/* Défini le header */
-				table.append('<thead></thead>');
-				tbHeader = table.children('thead');
-
-				/* Ecriture des en-tete */
-				tbHeader.append('<tr></tr>');
-				tbTR = tbHeader.children('tr');
-
-				for (i = 0; i < tHeader.length; i++) {
-					tbTR.append('<td>' + tHeader[i] + '</td>');
-				}
-			}
-
-			/* Défini le body */
-			table.append('<tbody></tbody>');
-			tbBody = table.children('tbody');
-
-			for (i = 0; i < tArray.length; i++) {
-				tbBody.append('<tr></tr>');
-				tbTR = jQuery(tbBody.children('tr')[i]);
-
-				for (j = 0; j < tArray[i].length; j++) {
-					tbTR.append('<td>' + tArray[i][j] + '</td>');
-				}
-			}
-
-
-			/* Rends le tableau compatible avec tablesorter */
-			table.tablesorter({
-				showProcessing: true,
-				widgets: ['stickyHeaders', 'filter'],
-				widgetOptions: {
-					stickyHeaders: "tablesorter-stickyHeader"
-				}
-			});
-
-			/* Aplique les classes de style au tableau */
-			table.addClass(tClass);
-		}
-	};
-
-	_ZeLib.array = {
-		sort: {
-			dim: function (index) {
-				return function (a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
-			}
-		},
-
-		getColumn: function (tArray, dim) {
-			var a = new Array;
-			for (i = 0; i < tArray.length; i++) {
-				a.push(tArray[i][dim]);
-			}
-			return a;
-		}
-	};
-
-	_ZeLib.url = {
-		get: {
-			param: {
-				byName: function (name) {
-					name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-					var regexS = "[\\?&]" + name + "=([^&#]*)";
-					var regex = new RegExp(regexS);
-					var results = regex.exec(window.location.search);
-					if (results == null)
-						return "";
-					else
-						return decodeURIComponent(results[1].replace(/\+/g, " "));
-				}
-			}
-		},
-
-		redirect: function (thePage) {
-			/* Ajout du hash pour conserver le parametre de langue */
-			var lang = window.location.hash.split('/')[1];
-			if (lang == undefined) { lang = 'fr'; }
-
-			window.location.href = thePage + '#/' + lang;
-		}
-	};
-
 	_ZeLib.fn = {
 		/* Retourne le type de l'argument */
 		type: function(obj) {
@@ -420,15 +299,220 @@
 		},
 
 		/* Envoie un message à l'utilisateur (Type E.T.-téléphone-maison) */
-		alert: function(msg) {
-			console.log('Message stats.js : \n' + msg); 
+		logMe: function(msg) {
+			console.log('ZeLib have a message for you : "' + msg + '"'); 
 		},
 
 		/* 'Jete' une erreur */
 		error: function(msg) {
-			console.log('Erreur stats.js : \n' + msg);
-			throw 'Erreur stats.js : \n' + msg;
+			var txt = 'ZeLib error : ';
+			console.log(txt + msg);
+			throw txt + msg;
 			// throw new Error(msg);
+		},
+		
+		warn: function (msg) {
+			console.warn ('ZeLib warning : ' + msg);
+		}
+		
+	};
+	
+	if (!window.error) { window.error = _ZeLib.fn.error; }
+	if (!window.logMe) { window.logMe = _ZeLib.fn.logMe; }
+	if (!window.warnMe) { window.warnMe = _ZeLib.fn.warn; }
+	
+	_ZeLib.glob = {
+		// Most used RegExp
+		reg: {
+			posInt: /^\d+$/,
+			negInt: /^-\d+$/,
+			posNegInt: /^-{0,1}\d*\.{0,1}\d+$/
+		}
+	};
+	
+	_ZeLib.tableau = {
+		/* Read HTML Table */
+		read: function (idTab) {
+			var $table = jQuery('#' + idTab),
+				$headerCells = $table.find("thead th"),
+				$rows = $table.find("tbody tr"),
+				headers = [],
+				rows = [];
+
+			$headerCells.each(function (k, v) {
+				headers[headers.length] = jQuery(this).text();
+			});
+
+			$rows.each(function (row, v) {
+				jQuery(this).find("td").each(function (cell, v) {
+					if (typeof rows[row] === 'undefined') rows[row] = [];
+					rows[row][cell] = jQuery(this).text();
+				});
+			});
+
+			return rows;
+		},
+
+		/* Génère un tableau HTML */
+		write: function (tID, cID, tArray /* , tHeaders, tClass */) {
+			var i = 0,
+				j = 0;
+
+			var container = jQuery('#' + cID),
+				tHeader = undefined, /* Textes des en-têtes */
+				tClass = '', /* Classes CSS du tableau */
+				table, /* tableau HTML */
+				tbHeader, /* en-tete du tableau HTML */
+				tbBody, /* corps du tableau HTML */
+				tbTR, /* <tr> HTML */
+				tbTD; /* <td> HTML */
+
+			/* Gestion des parametres facultatifs */
+			if (arguments[3]) { tHeader = arguments[3]; }
+			if (arguments[4]) { tClass = arguments[4]; }
+
+			/* Détermine si le conteneur existe */
+			if (container == undefined) {
+				error('le div conteneur n\'existe pas !');
+				return false;
+			}
+
+			/* vide le conteneur */
+			container.html('');
+
+			/* Détermine si 'tID' est déjà utilisé */
+			if (jQuery('#' + tID).length > 0) {
+				logMe('l\'ID utilisé pour le tableau existe déjà !');
+				return false;
+			}
+
+			/* Détermine si 'tArray' est un tableau javascript */
+			if (jQuery.isArray(tArray) == false) {
+				error('le parametre n\'est pas un tableau !');
+				return false;
+			}
+
+			/* Determine si un tableau d'en-tete est passé en parametre */
+			if (tHeader) {
+				if (jQuery.isArray(tHeader) == false) {
+					error('le parametre d\'en-tete n\'est pas un tableau !');
+					return false;
+				}
+			}
+
+			/* Défini la table */
+			container.append('<table id="' + tID + '"></table>');
+			table = jQuery('#' + tID);
+
+			/* Si tHeader est défini */
+			if (tHeader != undefined) {
+				/* Défini le header */
+				table.append('<thead></thead>');
+				tbHeader = table.children('thead');
+
+				/* Ecriture des en-tete */
+				tbHeader.append('<tr></tr>');
+				tbTR = tbHeader.children('tr');
+
+				for (i = 0; i < tHeader.length; i++) {
+					tbTR.append('<td>' + tHeader[i] + '</td>');
+				}
+			}
+
+			/* Défini le body */
+			table.append('<tbody></tbody>');
+			tbBody = table.children('tbody');
+
+			for (i = 0; i < tArray.length; i++) {
+				tbBody.append('<tr></tr>');
+				tbTR = jQuery(tbBody.children('tr')[i]);
+
+				for (j = 0; j < tArray[i].length; j++) {
+					tbTR.append('<td>' + tArray[i][j] + '</td>');
+				}
+			}
+
+
+			/* Rends le tableau compatible avec tablesorter */
+			table.tablesorter({
+				showProcessing: true,
+				widgets: ['stickyHeaders', 'filter'],
+				widgetOptions: {
+					stickyHeaders: "tablesorter-stickyHeader"
+				}
+			});
+
+			/* Aplique les classes de style au tableau */
+			table.addClass(tClass);
+		}
+	};
+
+	_ZeLib.array = {
+		sort: {
+			dim: function (index) {
+				return function (a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
+			}
+		},
+
+		getColumn: function (tArray, dim) {
+			var a = new Array;
+			for (i = 0; i < tArray.length; i++) {
+				a.push(tArray[i][dim]);
+			}
+			return a;
+		},
+		
+		filter: function (tArray, condition, dim) {
+			/* condition -> value to be equal */
+			var a = new Array;
+			for (i = 0; i < tArray.length; i++) { if (tArray[i][dim] == condition) { a.push(tArray[i]); } }
+			return a;
+		}
+	};
+
+	_ZeLib.url = {
+		get: {
+			param: {
+				byName: function (name) {
+					name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+					var regexS = "[\\?&]" + name + "=([^&#]*)";
+					var regex = new RegExp(regexS);
+					var results = regex.exec(window.location.search);
+					if (results == null)
+						return "";
+					else
+						return decodeURIComponent(results[1].replace(/\+/g, " "));
+				}
+			}
+		},
+
+		redirect: function (thePage) {
+			/* Ajout du hash pour conserver le parametre de langue */
+			var lang = window.location.hash.split('/')[1];
+			if (lang == undefined) { lang = 'fr'; }
+
+			window.location.href = thePage + '#/' + lang;
+		},
+		
+		addParam: function (url, obj) {
+			/* obj -> Array of objects like : {id: 'q', value: 'toto'} */
+			var param = '?';
+			var i;
+			var tAr = [];
+			
+			for (i=0;i<obj.length;i++) {
+				if(_ZeLib.fn.inArray(obj[i].id ,tAr) > -1) { error('Duplicate param name : `' + obj[i].id + '`'); } else { tAr.push(obj[i].id); };
+			}
+			
+			param = param + obj[0].id + '=' + obj[0].value;
+			
+			if (obj.length > 1) { for (i=1;i<obj.length;i++) {
+				param = param + '&' + obj[i].id + '=' + obj[i].value;
+			}}
+			
+			param = param.toString().replace(new RegExp('[\/ ]', 'g'), '');
+			
+			return url + param;
 		}
 	};
 
@@ -466,7 +550,7 @@
 			i;
 
 			if (!_ZeLib.fn.isSerie(aArray)) {
-				_ZeLib.fn.error('Le tableau n\'est pas une série (moyenne)');
+				error('Le tableau n\'est pas une série (moyenne)');
 			}
 
 			nbElem = aArray.length;
@@ -482,7 +566,7 @@
 			nbElem,
 			med;
 
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
 
 			/* Tri du tableau */
 			aArray.sort();
@@ -503,7 +587,7 @@
 			fVar,
 			fTmp;
 
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
 
 			nbElem = aArray.length;
 			fMoy = parseFloat(this.moyenne(aArray));
@@ -522,7 +606,7 @@
 			var fEcTp,
 			fVar;
 
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (ecartType)'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (ecartType)'); }
 
 			fVar = this.variance(aArray);
 			fEcTp = Math.sqrt(fVar);
@@ -531,7 +615,7 @@
 
 		/* Variance en % */
 		variance_percent: function (aArray) {
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (R&R)'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (R&R)'); }
 
 			var max = this.max(aArray),
 				min = this.min(aArray);
@@ -542,7 +626,7 @@
 
 		/* Calcul du CpK */
 		cpk: function (aArray, tolMin, tolMax) {
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Le tableau n\'est pas une série (CpK)'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (CpK)'); }
 			if (this.isNormal(aArray,0)) {
 				var cpkmin = parseFloat((this.moyenne(aArray) - tolMin) / (3 * this.ecartType(aArray))),
 					cpkmax = parseFloat((tolMax - this.moyenne(aArray)) / (3 * this.ecartType(aArray)));
@@ -554,16 +638,16 @@
 
 		/* Limites de controle à nbS ecart-types */
 		LCI: function(aArray, nbS) {
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
-			if (!_ZeLib.fn.isNumeric(nbS)) { _ZeLib.fn.error('Variable non numerique'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
 			return this.moyenne(aArray) - nbS * this.ecartType(aArray);
 		},
 
 		/* Limites de controle à nbS ecart-types */
 		LCS: function(aArray, nbS) {
-			if (!_ZeLib.fn.isSerie(aArray)) { _ZeLib.fn.error('Tableau n\'est pas une série'); }
-			if (!_ZeLib.fn.isNumeric(nbS)) { _ZeLib.fn.error('Variable non numerique'); }
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
+			if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
 			return this.moyenne(aArray) + nbS * this.ecartType(aArray);
 		},
@@ -760,7 +844,7 @@
 					autoscaleMargin: 5
 				},
 				selection: {
-					mode: 'x'
+					mode: 'xy'
 				},
 				legend : {
 					position : 'ne'
@@ -867,6 +951,10 @@
 
 		/* Graph de répartion de valeurs */
 		repart: {
+			init: function () {
+				return _ZeLib.fx.clone_object(this);
+			},
+			
 			opt: {
 				bars: {
 					show: true,
@@ -891,7 +979,7 @@
 					position : 'ne'
 				},
 				selection: {
-					mode: 'x'
+					mode: undefined
 				},
 				grid: {
 					verticalLines: false
@@ -925,8 +1013,8 @@
 					tArr.push(parseFloat(arg.data[i]));
 				}
 
-				var min = $$.math.min(tArr);
-				var max = $$.math.max(tArr);
+				var min = _ZeLib.math.min(tArr);
+				var max = _ZeLib.math.max(tArr);
 				var ec = (max - min) / (arg.div - 1);
 				var datArr = new Array;                    
 
@@ -1001,8 +1089,15 @@
 		// Format FR
 		defaultDateFormat: 'JJ/MM/AAAA HH:MM:SS',
 		
+		isJSDate: function (date) {
+			return Object.prototype.toString.call(date) == '[object Date]';
+		},
+		
 		// >> JJ[/]MM[/]AAAA[ HH[:MM[:SS]]]
 		toJSDate: function (dDate, dCode /* UNUSED */) {
+			
+			if (this.isJSDate(dDate)) { return dDate; }
+			
 			var d_day, d_month, d_year, d_hour, d_min, d_second;
 			
 			var date, time;
@@ -1044,7 +1139,7 @@
 			check = check || (d_min != undefined && d_min.length != 2);
 			check = check || (d_second != undefined && d_second.length != 2);
 			
-			if (check) { _ZeLib.fn.error('Input error'); return false; }
+			if (check) { error('Input error'); return false; }
 			// END CHECK
 			
 			d_day = parseInt(d_day, 10);
@@ -1056,13 +1151,13 @@
 			if (d_second != undefined) { d_second = parseInt(d_second, 10); } else { d_second = 0; }
 			
 			var jsDate = new Date(d_year, d_month - 1, d_day, d_hour, d_min, d_second);
-			//_ZeLib.fn.alert(jsDate);
+			//logMe(jsDate);
 			return jsDate;
 		},
 		
 		/* DO NOT USE AFTER 1.0-b.3 */
 		dateCode2js: function (dCode) {	
-			_ZeLib.fn.alert('Warning : \'dateCode2js\' is obsolete !');
+			warnMe('\'dateCode2js\' is obsolete !');
 			var dD =  parseInt(dCode.substring(0, 2),10),
 				dM =  parseInt(dCode.substring(2, 4),10),
 				dY =  parseInt(dCode.substring(4, 10),10);
@@ -1073,7 +1168,7 @@
 		
 		/* DO NOT USE AFTER 1.0-b.3 */
 		fr2js: function (frDate) {
-			_ZeLib.fn.alert('Warning : \'fr2js\' is obsolete !');
+			warnMe('\'fr2js\' is obsolete !');
 			var frDate_j = parseInt(frDate.substring(0, 2), 10),
 				frDate_m = parseInt(frDate.substring(3, 5), 10),
 				frDate_a = parseInt(frDate.substring(6, 10), 10);
@@ -1086,7 +1181,7 @@
 		
 		/* DO NOT USE AFTER 1.0-b.3 */
 		fr2jstime: function (frDate) {
-			_ZeLib.fn.alert('Warning : \'fr2jstime\' is obsolete !');
+			warnMe('\'fr2jstime\' is obsolete !');
 			var frDate_j = parseInt(frDate.substring(0, 2), 10),
 				frDate_m = parseInt(frDate.substring(3, 5), 10),
 				frDate_a = parseInt(frDate.substring(6, 10), 10),
@@ -1201,9 +1296,22 @@
 
 		/* Retourne le numéro de semaine (ISO) */
 		numSem: function (aaaa, mm, jj) {
-			mm = mm - 1;
-			var MaDate = new Date(aaaa, mm, jj),
-				annee = MaDate.getFullYear(),
+			var maDate;
+			
+			if (mm != undefined) { 
+				mm = mm - 1;
+				MaDate = new Date(aaaa, mm, jj);
+			} else if (this.isJSDate(aaaa)) {			
+				MaDate = aaaa;
+				jj = MaDate.getDate();
+				mm = MaDate.getMonth();
+				aaaa = MaDate.getFullYear();
+			} else {
+				error('Date non valide');
+				return false;
+			}
+			
+			var annee = MaDate.getFullYear(),
 				NumSemaine = 0,
 				ListeMois = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
 				TotalJour = 0,
@@ -1246,6 +1354,10 @@
 			}
 
 			return tArray;
+		},
+		
+		capitalize: function() {
+			return this.charAt(0).toUpperCase() + this.slice(1);
 		}
 	};
 
@@ -1266,6 +1378,64 @@
 
 				jQuery.ajax(ajaxOpts);
 			});
+		},
+		
+		/* Call a vb function */
+		vb: function (vbFunction, callback, param) {
+			var tData = [];
+			var cData = undefined;
+			var output = false;
+			var i;
+			
+			if (param != undefined) {
+				for (i=0;i<param.length;i++) {
+					if (param[i][0] == undefined || param[i][1] == undefined) {
+						error('Parametre ' + parseInt(parseInt(i) + parseInt(1)) + ' invalide !\n' + param[i]);
+						return false;
+					} else {
+						tData[i] = param[i][0] + ': "' + param[i][1] + '", ';
+					}
+				}
+				
+				cData = '{ ';
+				
+				for (i=0;i<tData.length;i++) {
+					cData = cData + tData[i];
+				}
+				
+				cData = cData.substring(0,cData.length - 2) + ' }';
+				
+			} else {
+				cData = '{ }';
+			}
+			
+			var result = $j.ajax({
+				type: "POST",
+				url: vbFunction, // ! Must include the file name (fix ?)
+				data: cData,
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				success: function(msg) {
+					/*	alert(msg); */
+					$j('#divAjaxErr').hide();
+					callback(msg);
+					output = msg.d;
+				},
+				failure: function(msg) {
+					$j('#divAjaxErr').slideDown(); 
+					$j('#ajax_error_details').html(msg);
+					callback(msg);
+					output = false;
+				},
+				error: function(xhr, err) {
+					callback(xhr ,err);
+					$j('#divAjaxErr').slideDown();
+					$j('#ajax_error_details').html(err);
+					output = false;
+				}
+			});
+			
+			return output;
 		}
 
 	};
@@ -1273,6 +1443,7 @@
     Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
 	String.prototype.trim = _ZeLib.string.trim;
 	String.prototype.toArray = _ZeLib.string.toArray;
-
+	String.prototype.capitalize = _ZeLib.string.capitalize;
+	
 	if (!window.z) { window.z = _ZeLib; }
 })();
