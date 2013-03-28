@@ -26,6 +26,11 @@
 	
 	Change log :
 	
+	v. 1.0-b.5
+		- [Add] fetch file on server status function
+		- [Add] Cp function
+		- [Update] logMe function -> grammar
+	
 	v. 1.0-b.4
 		- [Add] function for filtering a JS Array
 		- [Add] JS Date test
@@ -85,6 +90,7 @@
 		- JS redirection
 		- Add param to URLs
 			//TODO : deal with add param to with-param-url
+		- Fetch file status (with callback function)
 	* Charts & Graphs :
 		- Pareto
 		- time repartition
@@ -145,6 +151,7 @@
 		- ecartType
 		- variance_percent
 		- cpk
+		- cp
 		- LCI
 		- LCS
 		- isNormal
@@ -153,7 +160,6 @@
 			
 	//GLOBAL TODO
 		- improve documentation & comments !!
-		- add a function for getting Cp
  */
  
 
@@ -300,7 +306,7 @@
 
 		/* Envoie un message à l'utilisateur (Type E.T.-téléphone-maison) */
 		logMe: function(msg) {
-			console.log('ZeLib have a message for you : "' + msg + '"'); 
+			console.log('ZeLib has a message for you : "' + msg + '"'); 
 		},
 
 		/* 'Jete' une erreur */
@@ -513,7 +519,23 @@
 			param = param.toString().replace(new RegExp('[\/ ]', 'g'), '');
 			
 			return url + param;
-		}
+		},
+		
+		fetchStatus: function (address, callback) {
+            function returnStatus(req, status) {
+				if(status == 200) { console.log("The url is available"); callback(status); }
+				else { console.log("The url returned status code " + status); callback(status); }
+			}
+
+			function fs(address) {
+				var client = new XMLHttpRequest();
+				client.onreadystatechange = function() { if(this.readyState == 4) { returnStatus(this, this.status); } }
+				client.open("HEAD", address);
+				client.send();
+			}
+			
+			fs(address);
+        }
 	};
 
 	_ZeLib.math = {
@@ -631,6 +653,16 @@
 				var cpkmin = parseFloat((this.moyenne(aArray) - tolMin) / (3 * this.ecartType(aArray))),
 					cpkmax = parseFloat((tolMax - this.moyenne(aArray)) / (3 * this.ecartType(aArray)));
 				return this.min([cpkmin,cpkmax]);
+			} else {
+				return '-';
+			}
+		},
+		
+		/* Calcul du Cp */
+		cp: function (aArray, tolMin, tolMax) {
+			if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (CpK)'); }
+			if (this.isNormal(aArray,0)) {
+				return parseFloat((tolMax - tolMin) / (6 * this.ecartType(aArray)));
 			} else {
 				return '-';
 			}
