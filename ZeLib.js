@@ -17,6 +17,8 @@
 
 
 /*
+	@web :		https://github.com/liorzoue/ZeLib
+	
 	Required :
 	- jQuery 1.8.0+ (http://jquery.com) [ jQuery ;) ]	//TODO : Remove jQuery references
 	- Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
@@ -26,6 +28,19 @@
 	
 	Change log :
 	
+	v. 1.0-b.6
+		- [Add] option ignore null line in string.toArray function
+		- [Add] insertVar string prototype
+		- [Add] Console empty functions when console is undefined
+		- [Fix] bug when no object passed in url.addParam function
+		- [Fix] 'console is undefined' bug on IE
+		- [Fix] bad result in min/max functions
+		- [Update] tablesorter is not needed by tableau.write
+		- [Update] tableau.write options new version more flexible
+		- [Update] Flotr detection -> empty function
+		- [Removed] throwing an error on bad input in toJSDate function
+		- [Removed] '#/...' part of url in redirect
+		
 	v. 1.0-b.5
 		- [Add] fetch file on server status function
 		- [Add] Cp function
@@ -161,12 +176,32 @@
 	//GLOBAL TODO
 		- improve documentation & comments !!
  */
- 
 
+/* Tiny fix for console */
+(function() {
+  if (!window.console) {
+    window.console = {};
+  }
+  // union of Chrome, FF, IE, and Safari console methods
+  var m = [
+    "log", "info", "warn", "error", "debug", "trace", "dir", "group",
+    "groupCollapsed", "groupEnd", "time", "timeEnd", "profile", "profileEnd",
+    "dirxml", "assert", "count", "markTimeline", "timeStamp", "clear"
+  ];
+  // define undefined methods as noops to prevent errors
+  for (var i = 0; i < m.length; i++) {
+    if (!window.console[m[i]]) {
+      window.console[m[i]] = function() {};
+    }    
+  } 
+})();
 
 (function () {
 	if (jQuery == undefined) { throw 'jQuery was not detected !'; }
-	if (Flotr == undefined) { throw 'Flotr2 was not dectected !'; }
+	if (Flotr == undefined) {
+		console.log ('Flotr2 was not dectected !');
+		Flotr = function () {};
+	}
 	if (jQuery.tablesorter == undefined) { console.log('jQuery plugin \'tablesorter\' was not detected !'); }
 
     var ajaxQueue = jQuery({});
@@ -371,11 +406,21 @@
 				tbHeader, /* en-tete du tableau HTML */
 				tbBody, /* corps du tableau HTML */
 				tbTR, /* <tr> HTML */
-				tbTD; /* <td> HTML */
+				tbTD, /* <td> HTML */
+				optTablesorter; /* Options pour le plugin tablesorter */
 
 			/* Gestion des parametres facultatifs */
-			if (arguments[3]) { tHeader = arguments[3]; }
-			if (arguments[4]) { tClass = arguments[4]; }
+			if (arguments[3]) {
+				if (arguments[3].headTitles) {
+					tHeader = arguments[3].headTitles;
+				}
+				if (arguments[3].css) {
+					tClass = arguments[3].css;
+				}
+				if (arguments[3].tablesorter) {
+					optTablesorter = arguments[3].tablesorter;
+				}
+			}
 
 			/* Détermine si le conteneur existe */
 			if (container == undefined) {
@@ -438,15 +483,35 @@
 				}
 			}
 
-
-			/* Rends le tableau compatible avec tablesorter */
-			table.tablesorter({
-				showProcessing: true,
-				widgets: ['stickyHeaders', 'filter'],
-				widgetOptions: {
-					stickyHeaders: "tablesorter-stickyHeader"
+			if (table.tablesorter != undefined) {
+				/* Rends le tableau compatible avec tablesorter */
+				if (!optTablesorter) {
+					optTablesorter = {
+						showProcessing: true,
+						widgets: ['stickyHeaders', 'filter'],
+						widgetOptions: {
+							stickyHeaders: "tablesorter-stickyHeader"
+						}
+					};
+				} else {
+					if (!optTablesorter.showProcessing) {
+						optTablesorter.showProcessing = true;
+					}
+					if (!optTablesorter.widget) {
+						optTablesorter.widget = ['stickyHeaders', 'filter'];
+					}
+					if (!optTablesorter.widgetOptions) {
+						optTablesorter.widgetOptions = {
+							stickyHeaders: "tablesorter-stickyHeader"
+						};
+					} else {
+						if (!optTablesorter.widgetOptions.stickyHeaders) {
+							optTablesorter.widgetOptions.stickyHeaders = "tablesorter-stickyHeader";
+						}
+					}
 				}
-			});
+				table.tablesorter(optTablesorter);
+			}
 
 			/* Aplique les classes de style au tableau */
 			table.addClass(tClass);
@@ -493,11 +558,7 @@
 		},
 
 		redirect: function (thePage) {
-			/* Ajout du hash pour conserver le parametre de langue */
-			var lang = window.location.hash.split('/')[1];
-			if (lang == undefined) { lang = 'fr'; }
-
-			window.location.href = thePage + '#/' + lang;
+			window.location.href = thePage;
 		},
 		
 		addParam: function (url, obj) {
@@ -506,6 +567,7 @@
 			var i;
 			var tAr = [];
 			
+			if (obj[0] == undefined || obj == undefined) { return url; }
 			for (i=0;i<obj.length;i++) {
 				if(_ZeLib.fn.inArray(obj[i].id ,tAr) > -1) { error('Duplicate param name : `' + obj[i].id + '`'); } else { tAr.push(obj[i].id); };
 			}
@@ -555,14 +617,14 @@
 		},
 
 		min: function (aArray) {
-			var i, min = aArray[0];
-			for (i=0;i<aArray.length;i++) { if (aArray[i] < min) { min = aArray[i]; } }
+			var i, min = parseFloat(aArray[0]);
+			for (i=0;i<aArray.length;i++) { if (parseFloat(aArray[i]) < min) { min = parseFloat(aArray[i]); } }
 			return min;
 		},
 
 		max: function (aArray) {
-			var i, max = aArray[0];
-			for (i=0;i<aArray.length;i++) { if (aArray[i] > max) { max = aArray[i]; } }
+			var i, max = parseFloat(aArray[0]);
+			for (i=0;i<aArray.length;i++) { if (parseFloat(aArray[i]) > max) { max = parseFloat(aArray[i]); } }
 			return max;
 		},
 
@@ -810,10 +872,11 @@
 				yaxis: {
 					min: 0,
 					autoscaleMargin: 1,
-					showLabels: true
+					showLabels: false
 				},
 				xaxis: {
-					autoscale: true
+					autoscale: true,
+					min: 0
 				},
 				legend: {
 					position: 'se',
@@ -829,7 +892,7 @@
 							Flotr._.clone(_ZeLib.graphs.pareto.options),
 							opts || {});
 
-					oM = { mouse: { track: true, relative: true, trackFormatter: tFormat} };
+					oM = { mouse: { track: true, relative: false, position: 'nw', trackFormatter: tFormat} };
 					o = Flotr._.extend(
 								Flotr._.clone(o),
 								oM || {});
@@ -841,7 +904,7 @@
 						label: 'Pareto',
 						markers: {
 							show: true,
-							position: 'rm',
+							position: 'lm',
 							fontSize: 9,
 							labelFormatter: tFormat,
 							horizontal: true
@@ -867,6 +930,7 @@
 		/* Graph de répartion temporelle */
 		histo: {
 			opt: {
+				colors: ['#00A8F0', '#C0D800', '#C0D800', '#4DA74D', '#9440ED'],
 				xaxis: {
 					mode: 'time',
 					labelsAngle: 45
@@ -988,6 +1052,7 @@
 			},
 			
 			opt: {
+				colors: ['#00A8F0', '#CB4B4B', '#CB4B4B', '#4DA74D', '#9440ED'],
 				bars: {
 					show: true,
 					horizontal: false,
@@ -1171,7 +1236,7 @@
 			check = check || (d_min != undefined && d_min.length != 2);
 			check = check || (d_second != undefined && d_second.length != 2);
 			
-			if (check) { error('Input error'); return false; }
+			if (check) { return false; }
 			// END CHECK
 			
 			d_day = parseInt(d_day, 10);
@@ -1377,15 +1442,33 @@
 		},
 
 		/* string to array */
-		toArray: function (lSep /* line separator */, cSep /* column separator */) {
+		toArray: function (lSep /* line separator */, cSep /* column separator */, ignoreNullLines) {
 			var me = this.toString();
 			var tmpArray = me.split(lSep), i, tArray = new Array;
+			
+			if (ignoreNullLines == undefined) { ignoreNullLines = true; }
 
 			for (i = 0; i < tmpArray.length; i++) {
-				tArray[i] = tmpArray[i].split(cSep);
+				if ((tmpArray[i] != '' && ignoreNullLines) || (ignoreNullLines == false)) { tArray.push(tmpArray[i].split(cSep)); }
 			}
 
 			return tArray;
+		},
+		
+		insertVar: function() {
+			var func = function (me, arguments) {
+				var i, reg, str;
+				for (i=0;i<arguments.length;i++) {
+					/* logMe(arguments[i]); */
+					str = '{' + i + '\\}';
+					reg = new RegExp(str,'g');
+					me = me.replace(reg, arguments[i]);
+				}
+				
+				return me;
+			}
+			
+			return func(this, arguments);
 		},
 		
 		capitalize: function() {
@@ -1472,10 +1555,21 @@
 
 	};
 
+	_ZeLib.file = {
+		readCSV: function (file) {
+			logMe('Lecture CSV. Fichier : \'' + file + '\'');
+			if (!window.fileReader) {
+				// fileReader non supporté
+			} 
+		}
+	};
+	
     Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
+	String.prototype.insertVar = _ZeLib.string.insertVar;
 	String.prototype.trim = _ZeLib.string.trim;
 	String.prototype.toArray = _ZeLib.string.toArray;
 	String.prototype.capitalize = _ZeLib.string.capitalize;
+	
 	
 	if (!window.z) { window.z = _ZeLib; }
 })();
