@@ -28,6 +28,14 @@
 	
 	Change log :
 	
+	V. 1.0-c.0
+		- [Rewrite] Partial rewrite of library
+		- [Add] Extend function 
+		- [Add] Date diff in seconds
+	
+	v. 1.0-b.8
+		- [Update] error management in ajax.vb function
+	
 	v. 1.0-b.7
 		- [Add] distinctValues : get disctinct values in a array
 		- [Add] init functions for graphs
@@ -212,88 +220,122 @@
 })();
 
 (function() {
-    if (jQuery == undefined) { throw 'jQuery was not detected !'; }
-    if (Flotr == undefined) {
+
+	/* Plugins detection */
+    if (!window.jQuery) { throw 'jQuery was not detected !'; }
+    if (!window.Flotr) {
         console.log('Flotr2 was not dectected !');
         Flotr = function() { };
     }
     if (jQuery.tablesorter == undefined) { console.log('jQuery plugin \'tablesorter\' was not detected !'); }
 
+	
+	/* Initial declaration */
+	var _ZeLib = function () { console.log ('Hello, user !'); };
+	
+	/* Queue for ajax */
     var ajaxQueue = jQuery({});
 
+	/* Use of jQuery.extend for adding new functions */
+	var _ZeExtend = _ZeLib.ZeExtend = function (obj) {
+		/* Deep copy of the object */
+		var recursive = true;
+		return jQuery.extend(recursive, _ZeLib, obj);
+	};
+	
+	/* Hello world function */
+	_ZeExtend({ init: function () { return _ZeLib.clone(_ZeLib); }});
+	
+	/* Default options */
+	_ZeExtend({ options: {
+		ajax: {
+			divID: 'ajax-warn',
+			labelID: 'ajax-warn-txt',
+			showAlert: true
+		},
+		
+		regex: {
+			posInt: /^\d+$/,
+            negInt: /^-\d+$/,
+            posNegInt: /^-{0,1}\d*\.{0,1}\d+$/,
+			posNegIntComma: /^-{0,1}\d*,{0,1}\d+$/
+		}
+	}});
+	
+	/* Log functions */
+	_ZeExtend({ log: {
+		/* Standart log */
+		basic: function(msg) {
+			console.log('ZeLib has a message for you : "' + msg + '"');
+		},
+
+		/* error */
+		error: function(msg) {
+			var txt = 'ZeLib error : ';
+			console.log(txt + msg);
+			throw txt + msg;
+			// throw new Error(msg);
+		},
+
+		/* Warning*/
+		warn: function(msg) {
+			console.warn('ZeLib warning : ' + msg);
+		}
+	} });
+	
+	if (!window.error) { window.error = _ZeLib.log.error; }
+    if (!window.logMe) { window.logMe = _ZeLib.log.basic; }
+    if (!window.warnMe) { window.warnMe = _ZeLib.log.warn; }
+	
     var 
 		core_toString = Object.prototype.toString,
 		core_indexOf = Array.prototype.indexOf;
 
-    function clnObj(objet_reference) {
-        for (var i in objet_reference) {
-            if (typeof objet_reference[i] == "object" && typeof objet_reference[i].src != "undefined") {
-                //Object image
-                this[i] = new Image();
-                this[i].src = objet_reference[i].src;
-            } else {
-                if (typeof objet_reference[i] == "object" && typeof objet_reference[i].src == "undefined" && typeof objet_reference.length == "number") {
-                    //Object Array
-                    this[i] = new Array();
-                    for (var j = 0; j < objet_reference[i].length; j++) { this[i][j] = new clnObj(objet_reference[i][j]); }
-                } else {
-                    if (typeof objet_reference[i] == "object") { /* Other Object */this[i] = new clnObj(objet_reference[i]); }
-                    else { /* Not an Object */this[i] = objet_reference[i]; }
-                }
-            }
-        }
-    }
-
-    var _ZeLib = {};
-
-    _ZeLib.init = function() { logMe('I\'m ZeLib ! :)'); }
-
-    _ZeLib.ui = {
-        /* 	ZeLib can interact whith ui.
-        Every interactions require jQuery */
-
-        ajax: {
-            alert: true, /* Par défaut n'affiche pas d'alert() en cas d'erreur */
-            div: 'ajax-warn',
-            label: 'ajax-warn-txt'
-        }
-    }
-
-    _ZeLib.fx = {
-        clone_object: {
-            std: clnObj,
-            j: function(obj) { return jQuery.extend(true, {}, obj); }
-        },
-
-        c: function(obj) { return this.clone_object.j(obj); }
-    };
-
-    _ZeLib.fn = {
-        /* Retourne le type de l'argument */
-        type: function(obj) {
+	/* Functions */
+	_ZeExtend({ fn: {
+		clone: function (obj) {
+			return jQuery.extend(true, {}, obj);
+		},
+		
+		ZeExtend: _ZeLib.ZeExtend,
+		
+		extend: function () {
+			var recursive = true;
+			var target = arguments[0],
+				obj = arguments[1];
+				
+			return jQuery.extend(recursive, target, obj);
+		}
+	}});
+	
+	_ZeExtend({ extend: _ZeLib.fn.extend });
+	_ZeExtend({ clone: _ZeLib.fn.clone });
+	
+	
+	
+	/* Generic functions */
+	_ZeLib.extend(_ZeLib.fn, {
+		type: function(obj) {
             return (typeof obj).toString(); ;
         },
-
-        /* Teste si l'argument est un tableau */
-        isArray: function(obj) {
-            if (typeof obj == typeof []) {
-                return true;
-            } else {
-                return false;
-            }
-        },
-
-        /* Teste si numérique */
+		
+		/* true when array */
+        isArray: function(obj) { return (typeof obj == typeof []); },
+		
+		/* numeric test */
         isNumeric: function(obj) {
             var numericExpression = _ZeLib.glob.reg.posNegInt;
             if (String(obj).match(numericExpression)) {
                 return true;
-            } else {			
+            } else if (String(obj).match(_ZeLib.glob.reg.posNegIntComma)) {
+				obj = obj.replace(/,/g,"."); 
+				return true;
+			} else {
                 return false;
             }
         },
-
-        /* Teste si le tableau est une série de nombres */
+		
+		/* Teste si le tableau est une série de nombres */
         isSerie: function(aArray) {
             var dim, i;
 
@@ -367,40 +409,15 @@
             }
 
             return -1;
-        },
-
-        /* Envoie un message à l'utilisateur (Type E.T.-téléphone-maison) */
-        logMe: function(msg) {
-            console.log('ZeLib has a message for you : "' + msg + '"');
-        },
-
-        /* 'Jete' une erreur */
-        error: function(msg) {
-            var txt = 'ZeLib error : ';
-            console.log(txt + msg);
-            throw txt + msg;
-            // throw new Error(msg);
-        },
-
-        warn: function(msg) {
-            console.warn('ZeLib warning : ' + msg);
         }
-
-    };
-
-    if (!window.error) { window.error = _ZeLib.fn.error; }
-    if (!window.logMe) { window.logMe = _ZeLib.fn.logMe; }
-    if (!window.warnMe) { window.warnMe = _ZeLib.fn.warn; }
-
-    _ZeLib.glob = {
-        // Most used RegExp
-        reg: {
-            posInt: /^\d+$/,
-            negInt: /^-\d+$/,
-            posNegInt: /^-{0,1}\d*\.{0,1}\d+$/
-        }
-    };
-
+	});
+	
+	_ZeLib.extend(_ZeLib.fn, { tableau: {
+		read: function () { }
+	}});
+	
+	/**** NOT UPDATED ****/
+	
     _ZeLib.tableau = {
         /* Read HTML Table */
         read: function(idTab) {
@@ -1413,6 +1430,14 @@
 		},
 
 		diff: {
+			inSeconds: function (d1, d2) {
+				var t2 = d2.getTime();
+				var t1 = d1.getTime();
+
+				return parseInt((t2 - t1),10);
+			},
+			
+			
 			inDays: function(d1, d2) {
 				var t2 = d2.getTime();
 				var t1 = d1.getTime();
@@ -1691,6 +1716,7 @@
 					if (xhr.responseText != undefined && _ZeLib.ui.ajax.alert) { var mess = jQuery.parseJSON(xhr.responseText).Message; if (mess != undefined) { alert(mess); } }
 					$j('#' + _ZeLib.ui.ajax.div).slideDown();
 					$j('#' + _ZeLib.ui.ajax.label).html(jQuery.parseJSON(xhr.responseText).Message);
+					warnMe('Erreur ajax : \n"' + jQuery.parseJSON(xhr.responseText).Message + '"\n\ncallback function :\n' + eval(callback));
 					callback(xhr, err);
 					return false;
 				}
@@ -1720,7 +1746,7 @@
 				warnMe('Cookie non present');
 				return false;
 			}
-			var t = txt.split('#'), i;
+			var t = txt.split('|'), i;
 			
 			for (i=0;i<t.length;i++) {
 				$j('#' + t[i].split('&')[0]).val(t[i].split('&')[1]);
@@ -1730,7 +1756,7 @@
 		
 		FieldsToText: function (tArray) {
 			var i,out = '';
-			for (i=0;i<tArray.length;i++) { out = out + tArray[i].id + '&' + tArray[i].val + '#'; }
+			for (i=0;i<tArray.length;i++) { out = out + tArray[i].id + '&' + tArray[i].val + '|'; }
 			return out;
 		},
 		
