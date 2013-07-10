@@ -28,6 +28,15 @@
 	
 	Change log :
 	
+	v. 1.0-c.2
+		- [Rewrite] Continue rewriting of library
+		- [Add] Testing unit with qunit.js
+		- [Add] date.toString new feature
+		- [Add] export table to csv (download with no server request)
+		- [Update] Rewriting behavior of url functions 
+		- [Update] Tablesorter support in <table> generator -> just give options
+		- [Removed] Google Chart API - no time for this at the moment...
+		
 	V. 1.0-c.1
 		- [Rewrite] Continue rewriting of library
 		- [Add] Begin transition to Google Chart API
@@ -318,8 +327,6 @@
 	_ZeExtend({ extend: _ZeLib.fn.extend });
 	_ZeExtend({ clone: _ZeLib.fn.clone });
 
-
-
 	/* Generic functions */
 	_ZeLib.extend(_ZeLib.fn, {
 		type: function(obj) {
@@ -443,19 +450,20 @@
         },
 		
 		/* Write HTML <table> from JS array */
-		write: function(tID, cID, tArray /* , tHeaders, tClass */) {
+		write: function(tID, cID, tArray /* , { headTitles, headClass, css, tablesorter } */) {
             var i = 0,
 				j = 0;
 
             var container = jQuery('#' + cID),
-				tHeader = undefined, /* Textes des en-têtes */
-				tClass = '', /* Classes CSS du tableau */
-				table, /* tableau HTML */
-				tbHeader, /* en-tete du tableau HTML */
-				tbBody, /* corps du tableau HTML */
-				tbTR, /* <tr> HTML */
-				tbTD, /* <td> HTML */
-				optTablesorter; /* Options pour le plugin tablesorter */
+				tHeader = undefined,    /* Textes des en-têtes */
+				tClass = '',            /* Classes CSS du tableau */
+				headClass,              /* Classes CSS des headers */
+				table,                  /* tableau HTML */
+				tbHeader,               /* en-tete du tableau HTML */
+				tbBody,                 /* corps du tableau HTML */
+				tbTR,                   /* <tr> HTML */
+				tbTD,                   /* <td> HTML */
+				optTablesorter;         /* Options pour le plugin tablesorter */
 
             /* Gestion des parametres facultatifs */
             if (arguments[3]) {
@@ -467,6 +475,9 @@
                 }
                 if (arguments[3].tablesorter) {
                     optTablesorter = arguments[3].tablesorter;
+                }
+                if (arguments[3].headClass) {
+                    headClass = arguments[3].headClass;
                 }
             }
 
@@ -512,9 +523,16 @@
                 /* Ecriture des en-tete */
                 tbHeader.append('<tr></tr>');
                 tbTR = tbHeader.children('tr');
-
+                var cssClass = '';
                 for (i = 0; i < tHeader.length; i++) {
-                    tbTR.append('<td>' + tHeader[i] + '</td>');
+                    if (headClass != undefined) {
+                        if (headClass[i] != undefined) {
+                            cssClass = 'class="' + headClass[i] + '"';
+                        } else {
+                            cssClass = '';
+                        }
+                    } else { cssClass = ''; }
+                    tbTR.append('<th ' + cssClass + '>' + tHeader[i] + '</th>');
                 }
             }
 
@@ -530,57 +548,98 @@
                     tbTR.append('<td>' + tArray[i][j] + '</td>');
                 }
             }
-
-            if (table.tablesorter != undefined) {
-                /* Rends le tableau compatible avec tablesorter */
-                if (!optTablesorter) {
-                    optTablesorter = {
-                        showProcessing: true,
-                        widgets: ['stickyHeaders', 'filter'],
-                        widgetOptions: {
-                            stickyHeaders: "tablesorter-stickyHeader"
-                        }
-                    };
-                } else {
-                    if (!optTablesorter.showProcessing) {
-                        optTablesorter.showProcessing = true;
-                    }
-                    if (!optTablesorter.widget) {
-                        optTablesorter.widget = ['stickyHeaders', 'filter'];
-                    }
-                    if (!optTablesorter.widgetOptions) {
-                        optTablesorter.widgetOptions = {
-                            stickyHeaders: "tablesorter-stickyHeader"
-                        };
-                    } else {
-                        if (!optTablesorter.widgetOptions.stickyHeaders) {
-                            optTablesorter.widgetOptions.stickyHeaders = "tablesorter-stickyHeader";
-                        }
-                    }
-                }
-                table.tablesorter(optTablesorter);
-            }
-
+			
+			/* tablesorter support */
+			if (optTablesorter) {
+				// Init tablesorter
+				container.tablesorter(optTablesorter);
+			}
+			
             /* Aplique les classes de style au tableau */
             table.addClass(tClass);
         }
 	}});
-
-	_ZeExtend({ url: {} });
 	
-	/* To be updated *//*
-	_ZeLib.extend(_ZeLib.url, {
-		get: function (what, name) {
+	_ZeExtend({ url: {
+		get: function (what, obj) {
+			var result = undefined;
 			switch (what) {
-				case 'param': return true;
-			}
-		}
-	});
-	//*/
-		
-	/**** NOT UPDATED ****/
+				case 'param': 	// Parametre url
+					result = (function () {
+						obj = obj.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+						var regexS = "[\\?&]" + obj + "=([^&#]*)";
+						var regex = new RegExp(regexS);
+						var results = regex.exec(window.location.search);
+						if (results == null)
+							return "";
+						else
+							return decodeURIComponent(results[1].replace(/\+/g, " "));
+					})();
+					
+					break;
+				case 'url': 	// Full URL
 
-    _ZeLib.array = {
+					result = (function () {
+						// Here
+						logMe('z.get(\'url\'); not yet set');
+					})();
+					
+					break;
+				default:		// Unknown parameter
+					logMe('Unknown param : "' + what + '"');
+					result = false;
+					break;
+			}
+			
+			return result;
+		},
+		
+		redirect: function(thePage) {
+            window.location.href = thePage;
+        },
+		
+		addParam: function(url, obj) {
+            /* obj -> Array of objects like : {id: 'q', value: 'toto'} */
+            var param = '?';
+            var i;
+            var tAr = [];
+
+            if (obj[0] == undefined || obj == undefined) { return url; }
+            for (i = 0; i < obj.length; i++) {
+                if (_ZeLib.fn.inArray(obj[i].id, tAr) > -1) { error('Duplicate param name : `' + obj[i].id + '`'); } else { tAr.push(obj[i].id); };
+            }
+
+            param = param + obj[0].id + '=' + obj[0].value;
+
+            if (obj.length > 1) {
+                for (i = 1; i < obj.length; i++) {
+                    param = param + '&' + obj[i].id + '=' + obj[i].value;
+                }
+            }
+
+            param = param.toString().replace(new RegExp('[\/ ]', 'g'), '');
+
+            return url + param;
+        },
+
+        fetchStatus: function(address, callback) {
+            function returnStatus(req, status) {
+                if (status == 200) { console.log("The url is available"); callback(status); }
+                else { console.log("The url returned status code " + status); callback(status); }
+            }
+
+            function fs(address) {
+                var client = new XMLHttpRequest();
+                client.onreadystatechange = function() { if (this.readyState == 4) { returnStatus(this, this.status); } }
+                client.open("HEAD", address);
+                client.send();
+            }
+
+            fs(address);
+        }
+	}});
+	
+	_ZeExtend({ array: {
         sort: {
             dim: function(index) {
                 return function(a, b) { return (a[index] === b[index] ? 0 : (a[index] < b[index] ? -1 : 1)); };
@@ -639,70 +698,9 @@
 
             return tOutput;
         }
-    };
+    }});
 
-    _ZeLib.url = {
-        get: {
-            param: {
-                byName: function(name) {
-                    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-                    var regexS = "[\\?&]" + name + "=([^&#]*)";
-                    var regex = new RegExp(regexS);
-                    var results = regex.exec(window.location.search);
-                    if (results == null)
-                        return "";
-                    else
-                        return decodeURIComponent(results[1].replace(/\+/g, " "));
-                }
-            }
-        },
-
-        redirect: function(thePage) {
-            window.location.href = thePage;
-        },
-
-        addParam: function(url, obj) {
-            /* obj -> Array of objects like : {id: 'q', value: 'toto'} */
-            var param = '?';
-            var i;
-            var tAr = [];
-
-            if (obj[0] == undefined || obj == undefined) { return url; }
-            for (i = 0; i < obj.length; i++) {
-                if (_ZeLib.fn.inArray(obj[i].id, tAr) > -1) { error('Duplicate param name : `' + obj[i].id + '`'); } else { tAr.push(obj[i].id); };
-            }
-
-            param = param + obj[0].id + '=' + obj[0].value;
-
-            if (obj.length > 1) {
-                for (i = 1; i < obj.length; i++) {
-                    param = param + '&' + obj[i].id + '=' + obj[i].value;
-                }
-            }
-
-            param = param.toString().replace(new RegExp('[\/ ]', 'g'), '');
-
-            return url + param;
-        },
-
-        fetchStatus: function(address, callback) {
-            function returnStatus(req, status) {
-                if (status == 200) { console.log("The url is available"); callback(status); }
-                else { console.log("The url returned status code " + status); callback(status); }
-            }
-
-            function fs(address) {
-                var client = new XMLHttpRequest();
-                client.onreadystatechange = function() { if (this.readyState == 4) { returnStatus(this, this.status); } }
-                client.open("HEAD", address);
-                client.send();
-            }
-
-            fs(address);
-        }
-    };
-
-    _ZeLib.math = {
+    _ZeExtend({ math: {
         loiNormale: function(value, esp, ect) {
             var tempExp,
 				sqrt2pi = Math.sqrt(2 * Math.PI),
@@ -959,9 +957,9 @@
             return normal;
         }
 
-    };
+    }});
 
-    _ZeLib.graphs = {
+    _ZeExtend({ graphs: {
         /* Pareto */
         pareto: {
             /* Options génériques */
@@ -1328,9 +1326,9 @@
 
 			}
 		}
-	};
+	}});
 
-	_ZeLib.dates = {
+	_ZeExtend({ dates: {
 		// JJMMAAAA				- 8
 		// JJ/MM/AAAA			- 10
 		// JJ/MM/AAAA HH:MM:SS	- 19
@@ -1341,7 +1339,11 @@
 		isJSDate: function(date) {
 			return Object.prototype.toString.call(date) == '[object Date]';
 		},
-
+		
+		toStringFR: function (d) {
+			return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+		},
+	
 		// >> JJ[/]MM[/]AAAA[ HH[:MM[:SS]]]
 		toJSDate: function(dDate, dCode /* UNUSED */) {
 
@@ -1616,9 +1618,9 @@
 
 			return value;
 		}
-	};
+	}});
 
-	_ZeLib.string = {
+	_ZeExtend({ string: {
 		/* Supprime les espaces au début et à la fin d'une chaine */
 		trim: function() {
 			return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
@@ -1657,9 +1659,9 @@
 		capitalize: function() {
 			return this.charAt(0).toUpperCase() + this.slice(1);
 		}
-	};
+	}});
 
-	_ZeLib.ajax = {
+	_ZeExtend({ ajax: {
 
 		/*
 		queue ajax
@@ -1740,9 +1742,9 @@
 			return output;
 		}
 
-	};
+	}});
 
-	_ZeLib.page = {
+	_ZeExtend({ page: {
 		saveFields: function() {
 			/* save all input fields of the current page */
 			var inp = $j('input[type!=button][type!=hidden]');
@@ -1797,37 +1799,21 @@
 				}
 			}
 		}
-	};
+	}});
 
-	/* New ! begin supporting Google Chart API */
-	_ZeExtend({ chart: function (type, data, opts) {
-			var out = false;
+	_ZeExtend({ csv: {
+		export: function(obj) {
+			var $a = obj.data;
 			
-			/* Implement Google Chart API */
-			
-			if (!window.google) { throw 'Google API not detected !'; return false; }
-			else { _ZeLib.log.basic('Google API OK'); }
-			
-			switch(type) {
-				case 'pareto':
-				case 'barchart':
-				{
-					_ZeLib.log.basic('Chart type selected : ' + type);
-					out = true;
-					break;
-				}
-				default:
-				{
-					_ZeLib.log.warn('Unknown chart type : ' + type);
-					break;
-				}
+			if (!_ZeLib.fn.isArray($a)) { /* Verification de type */
+				logMe('export csv : erreur ! obj.data n\'est pas un tableau !');
+				return false;
 			}
 			
-			return out;
 			
-		}	
-	});
-	
+			/*  */
+		}
+	}});
 	
 	Date.prototype.dateAdd = _ZeLib.dates.dateAddExtension;
 	String.prototype.insertVar = _ZeLib.string.insertVar;
