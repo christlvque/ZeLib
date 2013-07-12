@@ -191,36 +191,97 @@ ChangeLog
 ---------
 [[top]](#zelib)
 
+### v. 1.0-c.2
+	[Rewrite] Continue rewriting of library
+	[Add] Testing unit with qunit.js
+	[Add] date.toString new feature
+	[Add] export table to csv (download with no server request)
+	[Add] repart function : return a 2-dim array with values and theirs quantities
+	[Add] Options for math object (only used in repart function at this time)
+	[Update] Rewriting behavior of url functions 
+	[Update] Tablesorter support in <table> generator -> just give options
+	[Removed] Google Chart API - no time for this at the moment...
+	
+### v. 1.0-c.1
+	[Rewrite] Continue rewriting of library
+	[Add] Begin transition to Google Chart API
+	[Fix] Bad internal function call in fn.isNumeric
+	[Warning] _ZeLib.url is buggy
+	
+### v. 10-c.0
+	[Rewrite] Partial rewrite of library
+	[Add] Extend function 
+	[Add] Date diff in seconds
+
+### v. 1.0-b.8
+	[Update] error management in ajax.vb function
+
+### v. 1.0-b.7
+	[Add] distinctValues : get disctinct values in a array
+	[Add] init functions for graphs
+	[Add] jQuery method for object clone
+	[Add] Save all fields in a variable
+	[Add] Write cookie function
+	[Add] Read cookie function
+	[Add] get month text (in french)
+	[Fix] bug with array
+	[Update] graphs functions to be more flexibles
+	[Update] More options in graphs.repart and partial rewrite
+	[Update] ajax VB is throwing error in alert() (optionnal : set ajax.alert to false to prevent this)
+
+### v. 1.0-b.6
+	[Add] option ignore null line in string.toArray function
+	[Add] insertVar string prototype
+	[Add] Console empty functions when console is undefined
+	[Fix] bug when no object passed in url.addParam function
+	[Fix] 'console is undefined' bug on IE
+	[Fix] bad result in min/max functions
+	[Update] tablesorter is not needed by tableau.write
+	[Update] tableau.write options new version more flexible
+	[Update] Flotr detection -> empty function
+	[Removed] throwing an error on bad input in toJSDate function
+	[Removed] '#/...' part of url in redirect
+	
+### v. 1.0-b.5
+	[Add] fetch file on server status function
+	[Add] Cp function
+	[Update] logMe function -> grammar
+
+### v. 1.0-b.4
+	[Add] function for filtering a JS Array
+	[Add] JS Date test
+	[Add] clone_object function
+	[Add] vb function call by ajax
+	[Add] add parameters to url
+	[Add] string prototype capitalize
+	[Add] warning function
+	[Update] Error throw function
+	[Update] Get week number function -> Accept a JS date in input
+	[Fix] bad reference to function in repartion graph drawing
+	[Fix] bug with negative value in time repartion graph drawing
 
 ### v. 1.0-b.3
-
-
-  * New date/time convertion function
-  * Deprecated old date/time convertion functions
-  * Updated RegExp for isNumeric function
-  * Added object whith global variables
+	[Add] New date/time convertion function
+	[Deprecated] old date/time convertion functions
+	[Update] RegExp for isNumeric function
+	[Add] object whith global variables
 
 
 ### v. 1.0-b.2
-
-  * Description translated in english
-  * New functions organisation
-  * Add `toArray()` String prototype
-  * Fix bug on `trim()` function
+	[Rewrite] New functions organisation
+	[Add] `toArray()` String prototype
+	[Update] Description translated in english
+	[Fix] bug on `trim()` function
 
 ### v. 1.0-b.1
-
-
-  * Added jQuery, Flotr and tablesorter detection - _just throw an error, nothing else !_
+	[Add] jQuery, Flotr and tablesorter detection - _just throw an error, nothing else !_
 
 ### v. 1.0-b.0
-
-  * Add `fn` object
-  * Add `math` object
+	[Add] `fn` object
+	[Add] `math` object
 	
 ### v. 1.0-a
-
-   * First public release
+	First public release
 	
 	
 License
