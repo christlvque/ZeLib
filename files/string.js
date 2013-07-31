@@ -1,6 +1,6 @@
 
-  _ZeLib.string = {
-		/* Supprime les espaces au dÃ©but et Ã  la fin d'une chaine */
+	_ZeLib.string = {
+		/* Supprime les espaces au début et à la fin d'une chaine */
 		trim: function() {
 			return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
 		},

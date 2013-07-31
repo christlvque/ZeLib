@@ -1,5 +1,5 @@
 (function() {
-  /* Plugins detection */
+	/* Plugins detection */
     if (!window.jQuery) { throw 'jQuery was not detected !'; }
     if (!window.Flotr) {
         console.log('Flotr2 was not dectected !');

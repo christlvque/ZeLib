@@ -1,0 +1,412 @@
+<html xmlns="http://www.w3.org/1999/xhtml" class=" -webkit-">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=100">
+
+		<link rel="stylesheet" href="qunit/qunit.css">
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+        
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <!-- Graphiques -->
+        <!--[if lt IE 9]>
+        <script type="text/javascript" src="js-libs/flashcanvas.js"></script>
+        <![endif]-->
+        <script type="text/javascript" src="js-libs/flotr.min.js"></script>
+		<script type="text/javascript" src="ZeLib.js"></script>
+		<script src="qunit/qunit.js"></script>
+		<script>
+			(function() {
+			
+				// ---------- MODULE 1 
+				module('ZeLib first init test');
+				
+				test ('init', function() {
+					var idTest = 1;
+					
+					ok(z(),
+						'ZeLib init');
+				});
+				
+				// ---------- MODULE 2
+				module('ZeLib functions fn');
+				
+				test ('isArray', function() {
+					ok(z.fn.isArray([1,2,4]),
+						'[1,2,4]');
+					equal(z.fn.isArray(1), false,
+						'1');
+					equal(z.fn.isArray('test string'), false,
+						'String');
+				
+				});
+				
+				test ('isNumeric', function() {
+					equal(z.fn.isNumeric(1), true,
+						'1');
+					equal(z.fn.isNumeric([1,2,4]), false,
+						'Array');
+					equal(z.fn.isNumeric('1'), true,
+						'"1"');
+					equal(z.fn.isNumeric('test string'), false,
+						'String');
+				});
+				
+				test ('isSerie', function() {
+					equal(z.fn.isSerie([1,2,4]), true,
+						'[1,2,4]');
+						
+					equal(z.fn.isSerie(1), false,
+						'1');
+						
+					equal(z.fn.isSerie('test string'), false,
+						'String');
+						
+					equal(z.fn.isSerie([1,2,'4']), true,
+						'[1,2,\'4\']');
+						
+					equal(z.fn.isSerie([1,2,'test']), false,
+						'[1,2,\'test\']');
+				});
+				
+				test ('others', function() {
+					equal(z.fn.getDimOfArray([[1,1],[2,2]]), 2,
+						'fn.getDimOfArray');
+					
+					var res = [9,5,3];
+					res.sort(z.array.sort.dim());
+					logMe(res);
+					equal(res == '3,5,9', true,
+						'sort is ok');
+				});
+				
+				// ---------- MODULE 3
+				module('ZeLib functions url');
+				
+				test ('get', function() {
+					equal(z.url.get('param','param1'), 'test',
+						'param');
+					equal(z.url.get('url'), undefined,
+						'url undefined');	
+						
+					equal(z.url.get('hash',1), 'hash',
+						'hash - 1');	
+						
+					equal(z.url.get('hash',2), 'tag',
+						'hash - 2');	
+						
+					//equal(z.url.get('hash'), '/hash/tag',
+					//	'hash - undefined');
+						
+					equal(z.url.get('paramnotset'), false,
+						'url unknow param');
+						
+					// equal(z.url.get(), 'file:///C:/Travail/dev/js/ZeLib/2/index.html?param1=test#/hash/tag',
+					//	'url all');
+				});
+
+				// ---------- MODULE 4
+				module('ZeLib maths');
+				
+				test('ZeLib maths', function () {
+					var arry = [5,4,6,20,12,1,243];
+					
+					var NormArr  = [1,
+									2,2,
+									3,3,3,3,
+									4,4,4,4,4,
+									5,5,5,5,
+									6,6,
+									7],
+									
+						nNormArr = [1,1,1,1,1,1,1,
+									2,2,2,2,
+									3,3,
+									4,
+									5,5,5,5,5,
+									6,6,6,6,
+									7,7,
+									8];
+						
+					equal(z.fn.inArray(12, arry), 4,
+						'math.inArray true');
+					equal(z.fn.inArray(42, arry), -1,
+						'math.inArray false');
+					
+					equal(z.math.repart([1,2,3,1,3,3,1,2,1,9]), '1,4,2,2,3,3,9,1',
+						'math.repart');
+				
+					equal(z.math.min(arry), 1,
+						'math.min');
+					equal(z.math.max(arry), 243,
+						'math.max');
+					
+					equal(z.avg(arry), 41.57142857142857,
+						'math.average');
+					equal(z.mediane(arry), 6,
+						'math.mediane');					
+					equal(z.ecartType(arry), 82.43934071764029,
+						'math.ecartType');
+					
+					equal(z.variance(arry), 6796.2448979591845,
+						'math.variance');
+					equal(z.math.variance(arry, '%'), 2808.365660313713,
+						'math.variance');
+					
+					
+					equal(z.math.isNormal(NormArr, 'kolgomorov'), true,
+						'math.isNormal 1 (normal - kolgomorov)');
+					equal(z.math.isNormal(NormArr, 'pvalue'), true,
+						'math.isNormal 2 (normal - pvalue)');
+					equal(z.math.isNormal(NormArr), undefined,
+						'math.isNormal 2 (normal - undefined)');
+						
+					equal(z.math.isNormal(nNormArr, 'kolgomorov'), false,
+						'math.isNormal 3 (non normal - kolgomorov)');
+					equal(z.math.isNormal(arry, 'kolgomorov'), true,
+						'math.isNormal 4 (arry - kolgomorov)');
+						
+						
+					equal(z.math.cpk(NormArr, 3, 5), 0.2241975697115164,
+						'math.cpk');
+					equal(z.math.cp(NormArr, 3, 5), 0.2241975697115164,
+						'math.cp');
+					
+				});
+				
+				// ---------- MODULE 5
+				module('ZeLib page');
+				
+                test('ZeLib cookie 1 IE', function () {
+                    equal(z.page.cookie('set', 'cookie.test', 'test', 1), true,
+						'cookie(\'set\')');
+                        
+                    equal(z.page.cookie('get', 'cookie.test'), 'test',
+						'cookie(\'get\') -> success');
+                });
+                
+				test('ZeLib cookie', function () {
+					var value = 'test' + new Date().getTime(),
+						name = 'cookie.test';
+					
+					equal(z.page.cookie('set', name, value, 1), true,
+						'cookie(\'set\')');
+						
+					equal(z.page.cookie('get', name), value,
+						'cookie(\'get\') -> success');
+						
+					equal(z.page.cookie('get', 'randomname'), undefined,
+						'cookie(\'get\') -> fail');
+					
+				});
+				
+				// ---------- MODULE 6
+				module('ZeLib dates');
+				
+				test('ZeLib getMonth', function () {
+					
+					equal(z.dates.getMonth(3), 'March',
+						'getMonth - undefined lang');
+					equal(z.dates.getMonth(3, 'fr'), 'Mars',
+						'getMonth - fr');
+					equal(z.dates.getMonth(3, 'es'), 'March',
+						'getMonth - es');
+					equal(z.dates.getMonth(3, 'en'), 'March',
+						'getMonth - en');
+					
+				});
+				
+				// ---------- MODULE 7
+				module('ZeLib arry');
+				
+				test('ZeLib toNumeric', function () {
+					var arry = ["45.21", "22", 1.2, "10.2"];
+					
+					equal(arry.toNumeric(), '45.21,22,1.2,10.2',
+						'toNumeric - arry');
+					equal(arry.toIndexedList(), '0,45.21,1,22,2,1.2,3,10.2',
+						'toIndexedList - arry');
+				});
+				
+                module('ZeLib graphs'); 
+                
+                test('plot', function () {
+                    var x = [], y = [], n;
+                    // generate random data
+                    for (n = 0; n < 30; n++){
+                        x.push(n);
+                        y.push(n + Math.random()*8 - 15);
+                    }
+                    
+                    equal(z.plot(x, y, 'plot', { dataTitle: 'plot' } ) != false, true, 'plot');
+                    equal(z.plot(x, y, 'plot-lr', { dataTitle: 'plot-lr', withReg: true } ) != false, true, 'plot - with regression line');
+                    
+                    x = [];
+                    y = [];
+                    
+                    for(n=-4; n<4; n=n+0.2) {
+                        x.push(n);
+                        y.push(z.phi(n));
+                    }
+                    
+                    equal(z.plot(x, y, 'plot-phi', { dataTitle: 'plot-phi' } ) != false, true, 'plot - phi values');
+                    
+                    x = [];
+                    y = [];
+                    
+                    for(n=-4; n<4; n=n+0.2) {
+                        x.push(n);
+                        y.push(z.normale(n, 0, 1));
+                    }
+                    
+                    equal(z.plot(x, y, 'plot-normal', { dataTitle: 'plot-normal' } ) != false, true, 'plot - normal law values');
+
+                });
+				
+                module('ZeLib statistics');
+                
+                test('phi', function () {
+                    equal(z.phi(0.12), 0.5477584260205839);
+                    equal(z.normale(0.12, 0, 1), 0.3960802117936561);
+                });
+                
+                module('ZeLib - tests statistics');
+                
+                test('normal', function () {
+                    var /* arr = [1,2,2,3,3,
+                               3,3,4,4,4,
+                               4,4,5,5,5,
+                               5,6,6,7,8],*/
+                        arr = [14, 20, 6, 18, 24, 26, 11, -0, 3, 13, 7, 24, -3, 20, 28, 0, 20, 13, 9, 15, 3, 6, 5, 10, -5, 20, 0, 6, 9, -1, 11, 6, 9, 16, 12, 15, 7, 16, 9, 11, 3, 0, 10, 7, 6, 11, 13, 22, 6, -4, -2, 17, 1, 8, 15, 13, 10, 8, 13, 18, 13, 6, 4, 7, 7, -0, 22, 2, 13, 17, 10, 0, 5, 6, 8, 13, 11, 2, -2, 12, 15, 7, 11, 14, 15, 9, 19, 12, 11, 3, 22, 5, 6, -1, 16, -4, 14, 9, 8, 16],
+                        avg = z.avg(arr),
+                        ec = z.ecartType(arr),
+                        x = [],
+                        y = [];
+                    
+                    equal(arr.length, 100 , 'length');
+                    equal(avg, 9.71, 'avg');
+                    equal(ec, 7.185116561337052 , 'ec');
+                                        
+                    equal(z.plot(z.repart(arr), undefined, 'plot-test-normal', { dataTitle: 'plot-test-normal' } ) != false, true, 'plot - normal law values');
+                    
+                    var q_quantile = 4;
+                    equal(z.quantile(arr, q_quantile, 1, true), '-5,5,9,14,28', 'quantile - ' + q_quantile + ' - method 1 - [-5,5,9,14,28]');
+                    equal(z.quantile(arr, q_quantile, 2, true), '-5,5.5,9.5,14.5,28', 'quantile - ' + q_quantile + ' - method 2 - [-5,5.5,9.5,14.5,28]');
+                    equal(z.quantile(arr, q_quantile, 3, true), '-5,5,9,14,28', 'quantile - ' + q_quantile + ' - method 3 - [-5,5,9,14,28]');
+                    
+                    equal(z.quantile(arr, q_quantile, 1, false), '5,9,14', 'quantile - ' + q_quantile + ' - method 1 (no extremes) - [5,9,14,28]');
+                    equal(z.quantile(arr, q_quantile, 2, false), '5.5,9.5,14.5', 'quantile - ' + q_quantile + ' - method 2 (no extremes) - [5.5,9.5,14.5]');
+                    equal(z.quantile(arr, q_quantile, 3, false), '5,9,14', 'quantile - ' + q_quantile + ' - method 3 (no extremes) - [5,9,14]');
+                    
+                    equal(z.isNormal(arr, 'kolgomorov'), true, 'normality test');
+                    
+                });
+                
+                test('non normal', function () {
+                    var arr = [],
+                        avg,
+                        ec,
+                        x = [],
+                        y = [];
+                    
+                    for(n=0; n<100; n++) {
+                        arr.push((Math.random()*4).roundNumber(1));
+                    }
+                    
+                    avg = z.avg(arr);
+                    ec = z.ecartType(arr);
+                    
+                    equal(arr.length, 100 , 'length');
+                    equal(avg, avg, 'avg');
+                    equal(ec, ec, 'ec');
+                    
+                    
+                    
+                    equal(z.plot(z.repart(arr), undefined, 'plot-test-non-normal', { dataTitle: 'plot-test-non-normal' } ) != false, true, 'plot - normal law values');
+
+                    // equal(z.quantile(arr, 4, 1, true), '0,3,5,7,10', 'quantile - 4');
+                    
+                    equal(z.isNormal(arr, 'kolgomorov'), true, 'normality test');
+                    
+                    z.qq_plot({ data: arr, id: 'plot-test-qq-nn' });
+                });
+                
+                
+                test('qq-plot', function () {
+                    var arr = [14, 11, 3, 11, 0, 14, 9, -1, 13, 12, 12, 3, 4, -6, 28, 7, 13, 8, 13, 5, 15, 2, 9, 22, 8, 7, 11, 25, 12, 18, 14, 4, 0, -4, -1, 4, 15, -8, 16, 21, 12, 16, 26, -1, 14, 15, 19, 19, -6, 9, 9, 11, 12, 17, 19, 9, 7, 2, 16, -3, 20, 16, 11, 16, 6, 12, 5, 15, 13, 23, 12, 5, 24, 15, 20, 0, 9, 12, 20, 0, 32, 7, 14, 8, -4, 6, 13, -3, 13, 6, 9, 17, 9, 3, 3, 4, 3, 25, 12, 17, 19, 16, 7, 0, -4, 23, 23, 16, -2, 7, 5, 10, 9, 15, 18, 11, 8, 24, 1, 21, -3, 11, 6, 3, 12, 6, 6, 15, 14, 11, 5, -4, -2, 16, 7, 16, 3, 11, -1, 10, 15, 12, 3, 18, 9, 13, 20, 7, 14, 0, 12, 9, 10, 7, 10, 25, 8, 6, 11, 12, 22, 2, 25, 14, 10, 7, 16, 16, 21, 2, 14, 8, 4, -1, 16, 0, 3, 15, 3, -3, 9, 0, 4, 7, 2, 11, 13, 13, 9, 9, 8, 10, 3, 4, 15, 19, 2, 17, 17, -5, 26, 23, 10, 7, 1, 12, 24, 12, -12, 4, 9, 13, -1, 6, 1, 13, 5, 10, 13, 10, 2, 27, 6, 8, 20, 14, -6, 9, 13, 12, 10, 13, 3, 12, 15, 0, 11, 21, 13, 19, 9, 15, 21, 18, 9, 4, 5, 12, 5, 6, 23, 14, 9, 4, 13, 10, 14, -11, 14, 1, 4, 1, 15, 31, 12, 6, 34, 1, 5, 18, 13, 18, 3, 10, -2, 5, 3, 3, 11, 15, 16, 6, 7, -2, 23, 10, 13, 5, 5, 2, -7, 6, 19, 19, 9, 17, 6, 18, 5, 14, 18, 4, 13, 12, -4, 7, 21, 3, 10, 16, 16, 22, 10, 13, -10, 4, -11, 1, 10, 11, 12, 13, 14, 4, 0, 7, 6, -1, 14, 10, 22, 16, 6, 23, 4, 12, -8, 10, 18, 16, 8, 9, 13, 5, 7, 16, 11, 14, 11, 12, 3, 7, 14, 12, 15, 19, 3, -4, -2, -4, 4, -3, 17, 5, 10, 22, 27, 10, 4, 16, 13, 19, 7, 16, 17, 2, 8, 17, -7, 12, 2, 5, 16, -2, 16, 11, 15, -3, -5, 11, 4, 4, 10, 20, 1, 16, 17, 0, 5, 6, 34, 12, 9, 3, 13, 6, 16, 6, 18, 7, 16, 23, 2, 13, -3, 5, 5, 12, 10, 6, 3, 9, 5, 10, 7, 19, 10, 13, 7, 9, 9, 6, 16, 15, 22, 2, 2, 13, 25, 12, -4, 11, 14, 11, 8, 2, 19, 20, 13, 8, 7, 30, 18, 7, 13, 19, 15, 8, 23, -1, 21, 26, 15, -3, 2, 15, -2, -4, 8, 9, 15, 7, 11, -1, 27, 26, 10, 7, 19, 0, 14, 4, -3, 4, 19, 22, 11, 17, 15, 9, 21, -12, 18, 14, 6, 6, 22, 9, 5, 18, 11, 8, 6, -1, -8, 2, 5, 11, 14, 18, 13, 8, 1, 14, 13, 25, 17, 19, 5, 22, 12, 9, 4, 2, 3, 15, 2, 5, -6, 8, 6, 7, 10, 3, 18, 11, 6, 10, 12, 7, 19, 0, 16, 10, -3, -3, 14, 18, 18, 19, 17, 3, 15, 8, 2, -4, 15, 0, 5, 4, 10, 12, 10, 2, 15, 11, 8, 19, 8, 8, 9, 6, 11, 18, 11, 9, 12, 0, -1, 7, 16, 14, 5, 18, 16, 17, 6, 24, 17, -7, 10, 21, 12, 11, 8, 13, 8, 4, 20, 8, 9, 12, 14, 1, 23, 13, 7, 12, -4, 2, 3, 16, 0, 0, 10, 7, 8, 17, 17, 26, 9, 12, 13, 6, 15, 7, -2, 21, 8, -7, 5, 16, 16, 9, 10, 5, 22, 4, 8, 9, 20, -4, 14, 0, 32, 22, 7, 11, 9, 26, -2, 24, 7, -7, 6, 11, 8, 12, 22, 22, -1, 16, 4, 24, 18, 19, 12, 22, 36, 5, 16, 23, 16, 1, 18, 2, 4, 30, 11, 9, -1, 8, 27, 11, 17, 11, 0, 5, 7, 8, 19, 7, 13, 6, 10, 1, 5, 3, -1, 3, 7, 10, 11, 4, 9, 6, -2, 11, 6, 3, 15, 9, 8, 16, 17, 0, 20, 8, 11, 2, 9, 9, 0, 15, 21, 11, 13, 17, 16, 7, 8, 18, 15, 15, 14, 15, 20, -12, 8, 13, 5, 8, 9, 2, 17, 5, 5, 21, 4, 20, 26, 7, 14, 29, 6, 6, 5, 8, 3, 15, 7, 17, 9, 9, 15, 15, 23, 2, 3, 3, 3, 13, 24, 11, -1, 10, 17, 12, 8, 20, 0, 6, 15, 4, 5, 14, 11, 1, 17, 17, 10, 27, -1, 11, 10, 9, 9, 7, 2, 11, 11, 7, 3, 9, 16, 13, -4, 14, -6, -3, 16, 18, 10, -4, 25, 8, 10, 16, 6, -6, 7, 15, 18, 19, 4, -3, 6, 21, 13, 10, 21, 1, 9, 11, 12, 16, 16, 13, 11, 2, 6, 7, 4, 5, -3, 9, 18, 15, 19, 1, 9, 12, 4, 5, 10, -3, 1, 9, 21, 17, 17, 24, 18, 10, 8, 6, 30, 1, 16, 12, 18, 14, 13, 19, -2, 10, -4, 22, 7, 10, -4, -11, 5, 5, 12, 7, 12, 8, 7, 4, 19, 19, -5, 15, 7, 10, 2, 15, 7, 17, -1, 11, 20, 6, 3, 9, -3, 13, 8, 23, 8, 3, 16, 5, 9, 3, -1, 1, -1, -2, 14, 11, -1, 11, -1, 17, 19, 4, 12, 8, -2, 20, 17, 12, 16, 7, 3, 8, 5, 13, 14, 24, 19, 11, -2, 6, 0, 6, 1, 14, 23, 11, 22, -2, 20, 2, 8, 0, 13, 0, 14, 10, 23, 3, 13, 20, 5, 8, 1, 14, 5, -1, 3, 10, 9, 12, -11, -2, 14, 8, 16, 3, -12, 12, 1, 21, 31, 15, -9, 13, 18, 18, 14, 14, 4, 7, 25, 11, 4, 7],
+                        avg = z.avg(arr),
+                        ec = z.ecartType(arr),
+                        x = [],
+                        y = [];
+                    
+                    equal(z.plot(z.repart(arr), undefined, 'plot-test-qq-plot-repr', { dataTitle: 'plot-test-qq-plot-repr' } ) != false, true, 'plot - normal repr');
+                    
+                    equal(arr.length, 1000 , 'length');
+                    equal(avg, 9.84, 'avg');
+                    equal(ec, 7.878984706166148, 'ec');
+                    
+                    z.qq_plot({ data: arr, id: 'plot-test-qq', nbPoints: 20 });
+                    
+                    $(function() { $( "#slider" ).slider({
+                        slide: function( event, ui ) {
+                            var selection = parseFloat($( "#slider" ).slider( "value" ));
+                            z.qq_plot({data: arr, id: 'plot-test-qq', nbPoints: selection });
+                        }
+                    }); });
+                
+                });
+                
+                
+                test('normal law - inverse', function () {
+                    var p = 0.95;
+                    //equal(z.statistics.normaleInverse(p, 0, 1).roundNumber(6), 1.644854, 'loi normale inverse - 0.95');
+                    equal(z.normalStdInverse(0.95).roundNumber(6),  1.644854, 'loi normale inverse - 0.95');
+                    equal(z.normalStdInverse(0.50).roundNumber(6),  0.000000, 'loi normale inverse - 0.50');
+                    equal(z.normalStdInverse(0.25).roundNumber(6), -0.674490, 'loi normale inverse - 0.25');
+                    
+                });
+                
+                
+                
+			})();
+		</script>
+		
+		<title>ZeLib</title>
+	</head>
+	<body>
+		<div id="qunit"></div>
+		<div id="qunit-fixture"></div>
+		
+        <hr>
+        
+        <div>
+            <strong>plot</strong><br /><br />
+            
+            <div id="plot" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-lr" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-phi" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-normal" style="height: 160px; width: 240px; display: inline-block;"></div>
+        </div>
+        
+        <hr>
+        
+        <div>
+            <strong>test</strong><br /><br />
+            
+            <div id="plot-test-normal" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-test-non-normal" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-test-qq-nn" style="height: 160px; width: 240px; display: inline-block;"></div>
+        </div>
+        
+        <hr>
+        
+        <div>
+            <strong>Q-Q Plot</strong><br /><br />
+            <div id="plot-test-qq-plot-repr" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="plot-test-qq" style="height: 160px; width: 240px; display: inline-block;"></div>
+            <div id="slider" style="width: 240px; display: inline-block; margin-bottom: 80px;"></div>
+        </div>
+        
+	</body>
+</html>

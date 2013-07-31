@@ -11,7 +11,7 @@
 (function( window ) {
 
 var QUnit,
-  assert,
+	assert,
 	config,
 	onErrorFnPrev,
 	testId = 0,

@@ -1,5 +1,5 @@
 (function() {
-  /* Generic functions */
+	/* Generic functions */
 	_ZeLib.extend(_ZeLib.fn, {
 		type: function(obj) {
             return (typeof obj).toString(); ;
@@ -21,7 +21,7 @@
             }
         },
 
-		/* Teste si le tableau est une s√©rie de nombres */
+		/* Teste si le tableau est une sÈrie de nombres */
         isSerie: function(aArray) {
             var dim, i;
 
@@ -32,7 +32,7 @@
             dim = this.getDimOfArray(aArray);
             if (dim != 1) { return false; }
 
-            /* Verification que tous les √©l√©ments soient num√©riques */
+            /* Verification que tous les ÈlÈments soient numÈriques */
             for (i = 0; i < aArray.length; i++) { if (this.isNumeric(aArray[i]) == false) { return false; } }
 
             return true;
@@ -64,7 +64,7 @@
             return parseFloat(newnumber);
         },
 
-        /* Test de parit√© */
+        /* Test de paritÈ */
         isPair: function(iValue) {
             if ((iValue / 2) == parseInt(iValue / 2)) { return true; } else { return false; }
         },
@@ -127,7 +127,7 @@
 				j = 0;
 
             var container = jQuery('#' + cID),
-				tHeader = undefined, /* Textes des en-t√™tes */
+				tHeader = undefined, /* Textes des en-tÍtes */
 				tClass = '', /* Classes CSS du tableau */
 				table, /* tableau HTML */
 				tbHeader, /* en-tete du tableau HTML */
@@ -149,7 +149,7 @@
                 }
             }
 
-            /* D√©termine si le conteneur existe */
+            /* DÈtermine si le conteneur existe */
             if (container == undefined) {
                 error('le div conteneur n\'existe pas !');
                 return false;
@@ -158,19 +158,19 @@
             /* vide le conteneur */
             container.html('');
 
-            /* D√©termine si 'tID' est d√©j√† utilis√© */
+            /* DÈtermine si 'tID' est dÈj‡ utilisÈ */
             if (jQuery('#' + tID).length > 0) {
-                logMe('l\'ID utilis√© pour le tableau existe d√©j√† !');
+                logMe('l\'ID utilisÈ pour le tableau existe dÈj‡ !');
                 return false;
             }
 
-            /* D√©termine si 'tArray' est un tableau javascript */
+            /* DÈtermine si 'tArray' est un tableau javascript */
             if (jQuery.isArray(tArray) == false) {
                 error('le parametre n\'est pas un tableau !');
                 return false;
             }
 
-            /* Determine si un tableau d'en-tete est pass√© en parametre */
+            /* Determine si un tableau d'en-tete est passÈ en parametre */
             if (tHeader) {
                 if (jQuery.isArray(tHeader) == false) {
                     error('le parametre d\'en-tete n\'est pas un tableau !');
@@ -178,13 +178,13 @@
                 }
             }
 
-            /* D√©fini la table */
+            /* DÈfini la table */
             container.append('<table id="' + tID + '"></table>');
             table = jQuery('#' + tID);
 
-            /* Si tHeader est d√©fini */
+            /* Si tHeader est dÈfini */
             if (tHeader != undefined) {
-                /* D√©fini le header */
+                /* DÈfini le header */
                 table.append('<thead></thead>');
                 tbHeader = table.children('thead');
 
@@ -197,7 +197,7 @@
                 }
             }
 
-            /* D√©fini le body */
+            /* DÈfini le body */
             table.append('<tbody></tbody>');
             tbBody = table.children('tbody');
 

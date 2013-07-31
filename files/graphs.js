@@ -2,7 +2,7 @@
     _ZeLib.graphs = {
         /* Pareto */
         pareto: {
-            /* Options gÃ©nÃ©riques */
+            /* Options génériques */
             options: {
                 selection: { mode: 'y', fps: 30 },
                 bars: {
@@ -31,7 +31,7 @@
 
                 function internal_draw_pa(id, dArray, tFormat, opts) {
                     var o = Flotr._.extend(
-  						Flotr._.clone(_ZeLib.graphs.pareto.options),
+							Flotr._.clone(_ZeLib.graphs.pareto.options),
 							opts || {});
 
                     oM = { mouse: { track: true, relative: false, position: 'nw', trackFormatter: tFormat} };
@@ -69,7 +69,7 @@
                 }
             },
 
-		/* Graph de rÃ©partion temporelle */
+		/* Graph de répartion temporelle */
 		histo: {
 			init: function() { return _ZeLib.fx.clone_object.j(this); },
 
@@ -98,8 +98,8 @@
 
 			draw: function(arg) {
 				/*
-				arg.data    :   tableau de donnÃ©es
-				arg.cols    :   colonnes Ã  utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par dÃ©faut { x: 0, y: 1 }]
+				arg.data    :   tableau de données
+				arg.cols    :   colonnes à utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par défaut { x: 0, y: 1 }]
 				arg.cont    :   id du container
 				*/
 
@@ -117,7 +117,7 @@
 				var datArr_2 = new Array;
 				var datArr_3 = new Array;
 
-				/* Si tableau Ã  une dimension en parametre */
+				/* Si tableau à une dimension en parametre */
 				if (_ZeLib.fn.getDimOfArray(arg.data) == 1) { for (i = 0; i < arg.data.length; i++) { arg.data[i] = [i, parseFloat(arg.data[i])]; } }
 
 				for (i = 0; i < arg.data.length; i++) {
@@ -195,7 +195,7 @@
 			}
 		},
 
-		/* Graph de rÃ©partion de valeurs */
+		/* Graph de répartion de valeurs */
 		repart: {
 
 			init: function() { return _ZeLib.fx.clone_object.j(this); },
@@ -237,8 +237,8 @@
 				//TODO : fix bug when multiple redraw
 				//TODO : add option to draw vertical line
 				/*
-				arg.data    :   tableau de donnÃ©es
-				arg.cols    :   colonnes Ã  utiliser, format : { x: 0 } [facultatif - par dÃ©faut { x: 0 }]
+				arg.data    :   tableau de données
+				arg.cols    :   colonnes à utiliser, format : { x: 0 } [facultatif - par défaut { x: 0 }]
 				arg.cont    :   id du container
 				arg.title	: 	titre du graphique
 				arg.vertical:	array of values for vertical lines - format : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]

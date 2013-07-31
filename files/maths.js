@@ -1,7 +1,7 @@
 _ZeLib.math = {
         loiNormale: function(value, esp, ect) {
             var tempExp,
-  			sqrt2pi = Math.sqrt(2 * Math.PI),
+				sqrt2pi = Math.sqrt(2 * Math.PI),
 				fOut = 0;
 
             value = parseFloat(value);
@@ -27,13 +27,13 @@ _ZeLib.math = {
         },
 
         moyenne: function(aArray) {
-            var nbElem = 0, /* Nombre d'Ã©lÃ©ments dans le tableau */
-			sum = 0, /* Somme de tous les Ã©lÃ©ments */
+            var nbElem = 0, /* Nombre d'éléments dans le tableau */
+			sum = 0, /* Somme de tous les éléments */
 			i,
 			arr = aArray.slice();
 
             if (!_ZeLib.fn.isSerie(arr)) {
-                error('Le tableau n\'est pas une sÃ©rie (moyenne)');
+                error('Le tableau n\'est pas une série (moyenne)');
             }
 
             nbElem = arr.length;
@@ -50,13 +50,13 @@ _ZeLib.math = {
 			med,
 			arr = aArray.slice();
 
-            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une sÃ©rie'); }
+            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une série'); }
 
             /* Tri du tableau */
             arr.sort();
             nbElem = arr.length;
 
-            /* Calcul de la mÃ©dianes */
+            /* Calcul de la médianes */
             if (_ZeLib.fn.isPair(nbElem)) {
                 med = this.moyenne([arr[(nbElem / 2) - 1], arr[((nbElem / 2) + 1) - 1]]);
             } else { med = arr[(nbElem - 1) / 2]; }
@@ -71,7 +71,7 @@ _ZeLib.math = {
 			fVar,
 			fTmp;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÃ©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
 
             nbElem = aArray.length;
             fMoy = parseFloat(this.moyenne(aArray));
@@ -90,7 +90,7 @@ _ZeLib.math = {
             var fEcTp,
 			fVar;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÃ©rie (ecartType)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (ecartType)'); }
 
             fVar = this.variance(aArray);
             fEcTp = Math.sqrt(fVar);
@@ -99,7 +99,7 @@ _ZeLib.math = {
 
         /* Variance en % */
         variance_percent: function(aArray) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÃ©rie (R&R)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (R&R)'); }
 
             var max = this.max(aArray),
 				min = this.min(aArray);
@@ -110,7 +110,7 @@ _ZeLib.math = {
 
         /* Calcul du CpK */
         cpk: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÃ©rie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (CpK)'); }
             if (this.isNormal(aArray, 0)) {
                 var cpkmin = parseFloat((this.moyenne(aArray) - tolMin) / (3 * this.ecartType(aArray))),
 					cpkmax = parseFloat((tolMax - this.moyenne(aArray)) / (3 * this.ecartType(aArray)));
@@ -122,7 +122,7 @@ _ZeLib.math = {
 
         /* Calcul du Cp */
         cp: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÃ©rie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (CpK)'); }
             if (this.isNormal(aArray, 0)) {
                 return parseFloat((tolMax - tolMin) / (6 * this.ecartType(aArray)));
             } else {
@@ -130,38 +130,38 @@ _ZeLib.math = {
             }
         },
 
-        /* Limites de controle Ã  nbS ecart-types */
+        /* Limites de controle à nbS ecart-types */
         LCI: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÃ©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.moyenne(aArray) - nbS * this.ecartType(aArray);
         },
 
-        /* Limites de controle Ã  nbS ecart-types */
+        /* Limites de controle à nbS ecart-types */
         LCS: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÃ©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une série'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.moyenne(aArray) + nbS * this.ecartType(aArray);
         },
 
-        isNormal: function(aArray, nbClasses /* InutilisÃ© pour l'instant */) {
+        isNormal: function(aArray, nbClasses /* Inutilisé pour l'instant */) {
             /*	Test de Kolgomorov-Smirnov */
             /*	Principe :
-				Le test consiste Ã  mesurer l'Ã©cart
-				entre la fonction de rÃ©partition exacte (ici, la loi normale)
-				et la fonction de rÃ©partition empirique
+				Le test consiste à mesurer l'écart
+				entre la fonction de répartition exacte (ici, la loi normale)
+				et la fonction de répartition empirique
 					
-					le test est validÃ© si la valeur absolue de
-				l'ecart max des frÃ©quences ne dÃ©passe pas une certaine valeur
+					le test est validé si la valeur absolue de
+				l'ecart max des fréquences ne dépasse pas une certaine valeur
 				   
-					On calcule donc les frÃ©quences
+					On calcule donc les fréquences
 				d'apparition de toutes les valeurs distinctes
             */
 
-            var aFreq = [[], [], []], /* Tableau des frÃ©quences */
-				max, /* Ã©cart max */
+            var aFreq = [[], [], []], /* Tableau des fréquences */
+				max, /* écart max */
 				sizeOf, /* Taille du tableau */
 				normal, /* contient la sortie */
 				pos, i;
@@ -170,7 +170,7 @@ _ZeLib.math = {
 
             sizeOf = aArray.length
 
-            /* Calcul des frÃ©quences */
+            /* Calcul des fréquences */
             for (i = 0; i < sizeOf; i++) {
                 pos = _ZeLib.fn.inArray(aArray[i], aFreq[0]);
                 if (pos < 0) {
@@ -183,7 +183,7 @@ _ZeLib.math = {
 
             for (i = 0; i < aFreq[1].length; i++) { aFreq[1][i] = aFreq[1][i] / sizeOf; }
 
-            /* Calcul des frÃ©quences thÃ©oriques */
+            /* Calcul des fréquences théoriques */
             max = 0;
             for (i = 0; i < aFreq[0].length; i++) {
                 aFreq[2][i] = this.loiNormale(
@@ -198,8 +198,8 @@ _ZeLib.math = {
 
             if (sizeOf < 41) {
                 /*	Table des valeurs critiques
-                du test de Kolmogorov-Smirnov pour un Ã©chantillon
-                pour une erreur Ã  5%
+                du test de Kolmogorov-Smirnov pour un échantillon
+                pour une erreur à 5%
                 N 	Valeur
                 5	0.565
                 6	0.52
@@ -239,13 +239,13 @@ _ZeLib.math = {
                 40	0.21
 
 					Equation de la courbe de tendance : 1.2349*max^(-0.48)
-                Coeff RÂ² = 0.9999
+                Coeff R² = 0.9999
                 */
 
                 if (max > (1.2349 * Math.pow(sizeOf, -0.48))) { normal = false; } else { normal = true }
             } else {
                 /* 	Pour sizeOf >= 40
-                Les valeurs critiques du test sont dÃ©terminÃ©es par la formule :
+                Les valeurs critiques du test sont déterminées par la formule :
                 1.36 * racine (N)
                 */
 

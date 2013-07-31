@@ -1,5 +1,5 @@
 
-  _ZeLib.ajax = {
+	_ZeLib.ajax = {
 
 		/*
 		queue ajax

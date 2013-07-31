@@ -33,7 +33,7 @@
     
     Changelog :
     
-    v. 1.2.20130731 [Maths Update]
+    v. 1.2.20130730 [Maths Update]
         - [Add] [Object] New process object -> contain all functions linked to indus process
         - [Add] [Object] New mat object -> contain all functions linked to matrix
         - [Add] [Math] Constants
@@ -431,7 +431,7 @@
             }
         },
 
-        /* Teste si le tableau est une s√©rie de nombres */
+        /* Teste si le tableau est une sÈrie de nombres */
         isSerie: function(aArray) {
             var dim, i;
 
@@ -442,7 +442,7 @@
             dim = this.getDimOfArray(aArray);
             if (dim != 1) { return false; }
 
-            /* Verification que tous les √©l√©ments soient num√©riques */
+            /* Verification que tous les ÈlÈments soient numÈriques */
             for_length = aArray.length;
             for (i = 0; i < for_length; i++) { if (this.isNumeric(aArray[i]) == false) { return false; } }
 
@@ -481,7 +481,7 @@
             return parseFloat(newnumber);
         },
 
-        /* Test de parit√© */
+        /* Test de paritÈ */
         isPair: function(iValue) {
             if ((iValue / 2) == parseInt(iValue / 2)) { return true; } else { return false; }
         },
@@ -546,7 +546,7 @@
                 for_length_j;
 
             var container = jQuery('#' + cID),
-                tHeader = undefined,    /* Textes des en-t√™tes */
+                tHeader = undefined,    /* Textes des en-tÍtes */
                 tClass = '',            /* Classes CSS du tableau */
                 headClass,              /* Classes CSS des headers */
                 table,                  /* tableau HTML */
@@ -572,7 +572,7 @@
                 }
             }
 
-            /* D√©termine si le conteneur existe */
+            /* DÈtermine si le conteneur existe */
             if (container == undefined) {
                 error('le div conteneur n\'existe pas !');
                 return false;
@@ -581,19 +581,19 @@
             /* vide le conteneur */
             container.html('');
 
-            /* D√©termine si 'tID' est d√©j√† utilis√© */
+            /* DÈtermine si 'tID' est dÈj‡ utilisÈ */
             if (jQuery('#' + tID).length > 0) {
-                logMe('l\'ID utilis√© pour le tableau existe d√©j√† !');
+                logMe('l\'ID utilisÈ pour le tableau existe dÈj‡ !');
                 return false;
             }
 
-            /* D√©termine si 'tArray' est un tableau javascript */
+            /* DÈtermine si 'tArray' est un tableau javascript */
             if (jQuery.isArray(tArray) == false) {
                 error('le parametre n\'est pas un tableau !');
                 return false;
             }
 
-            /* Determine si un tableau d'en-tete est pass√© en parametre */
+            /* Determine si un tableau d'en-tete est passÈ en parametre */
             if (tHeader) {
                 if (jQuery.isArray(tHeader) == false) {
                     error('le parametre d\'en-tete n\'est pas un tableau !');
@@ -601,13 +601,13 @@
                 }
             }
 
-            /* D√©fini la table */
+            /* DÈfini la table */
             container.append('<table id="' + tID + '"></table>');
             table = jQuery('#' + tID);
 
-            /* Si tHeader est d√©fini */
+            /* Si tHeader est dÈfini */
             if (tHeader != undefined) {
-                /* D√©fini le header */
+                /* DÈfini le header */
                 table.append('<thead></thead>');
                 tbHeader = table.children('thead');
 
@@ -628,7 +628,7 @@
                 }
             }
 
-            /* D√©fini le body */
+            /* DÈfini le body */
             table.append('<tbody></tbody>');
             tbBody = table.children('tbody');
             for_length = tArray.length;
@@ -899,7 +899,7 @@
             arr = aArray.slice();
 
             if (!_ZeLib.fn.isSerie(arr)) {
-                error('Le tableau n\'est pas une s√©rie (moyenne)');
+                error('Le tableau n\'est pas une sÈrie (moyenne)');
             }
 
             nbElem = arr.length;
@@ -916,13 +916,13 @@
             med,
             arr = aArray.slice();
 
-            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une s√©rie'); }
+            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une sÈrie'); }
 
             /* Tri du tableau */
             arr.sort(sort_numbers);
             nbElem = arr.length;
             /* logMe(arr); */
-            /* Calcul de la m√©dianes */
+            /* Calcul de la mÈdianes */
             if (_ZeLib.fn.isPair(nbElem)) {
                 med = this.avg([arr[(nbElem / 2) - 1], arr[((nbElem / 2) + 1) - 1]]);
             } else { med = arr[(nbElem - 1) / 2]; }
@@ -937,7 +937,7 @@
             fVar,
             fTmp;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
 
             nbElem = aArray.length;
             fMoy = parseFloat(this.avg(aArray));
@@ -961,7 +961,7 @@
             var fEcTp,
             fVar;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (ecartType)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (ecartType)'); }
 
             fVar = this.variance(aArray);
             fEcTp = Math.sqrt(fVar);
@@ -1000,7 +1000,7 @@
         
         /* Calcul du CpK */
         cpk: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (CpK)'); }
             /*
             if (this.isNormal(aArray, 'kolgomorov')) {
             // */
@@ -1016,7 +1016,7 @@
 
         /* Calcul du Cp */
         cp: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (CpK)'); }
             /*
             if (this.isNormal(aArray, 'kolgomorov')) {
             // */
@@ -1028,17 +1028,17 @@
             // */
         },
 
-        /* Limites de controle √† nbS ecart-types */
+        /* Limites de controle ‡ nbS ecart-types */
         LCI: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.avg(aArray) - nbS * this.ecartType(aArray);
         },
 
-        /* Limites de controle √† nbS ecart-types */
+        /* Limites de controle ‡ nbS ecart-types */
         LCS: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.avg(aArray) + nbS * this.ecartType(aArray);
@@ -1117,26 +1117,26 @@
         isNormal: function(aArray, test) {
             /*     Plusieurs test : 
                 'kolgomorov'     : Test de Kolgomorov-Smirnov
-                'pvalue'        : Test par rapport √† la p-value
+                'pvalue'        : Test par rapport ‡ la p-value
             */
             
             var kolgomorov_smirnov = function (arry) {
             
                 /*    Test de Kolgomorov-Smirnov */
                 /*    Principe :
-                    Le test consiste √† mesurer l'√©cart
-                    entre la fonction de r√©partition exacte (ici, la loi normale)
-                    et la fonction de r√©partition empirique
+                    Le test consiste ‡ mesurer l'Ècart
+                    entre la fonction de rÈpartition exacte (ici, la loi normale)
+                    et la fonction de rÈpartition empirique
                         
-                        le test est valid√© si la valeur absolue de
-                    l'ecart max des fr√©quences ne d√©passe pas une certaine valeur
+                        le test est validÈ si la valeur absolue de
+                    l'ecart max des frÈquences ne dÈpasse pas une certaine valeur
                        
-                        On calcule donc les fr√©quences
+                        On calcule donc les frÈquences
                     d'apparition de toutes les valeurs distinctes
                 */
 
-                var aFreq = [[], [], []], /* Tableau des fr√©quences */
-                    max, /* √©cart max */
+                var aFreq = [[], [], []], /* Tableau des frÈquences */
+                    max, /* Ècart max */
                     sizeOf, /* Taille du tableau */
                     normal, /* contient la sortie */
                     pos, i;
@@ -1145,7 +1145,7 @@
 
                 sizeOf = arry.length
 
-                /* Calcul des fr√©quences */
+                /* Calcul des frÈquences */
                 for (i = 0; i < sizeOf; i++) {
                     pos = _ZeLib.fn.inArray(arry[i], aFreq[0]);
                     if (pos < 0) {
@@ -1159,7 +1159,7 @@
                 for_length = aFreq[1].length;
                 for (i = 0; i < for_length; i++) { aFreq[1][i] = aFreq[1][i] / sizeOf; }
 
-                /* Calcul des fr√©quences th√©oriques */
+                /* Calcul des frÈquences thÈoriques */
                 max = 0;
                 for_length = aFreq[0].length;
                 for (i = 0; i < for_length; i++) {
@@ -1175,8 +1175,8 @@
 
                 if (sizeOf < 41) {
                     /*    Table des valeurs critiques
-                    du test de Kolmogorov-Smirnov pour un √©chantillon
-                    pour une erreur √† 5%
+                    du test de Kolmogorov-Smirnov pour un Èchantillon
+                    pour une erreur ‡ 5%
                     N     Valeur
                     5    0.565
                     6    0.52
@@ -1216,13 +1216,13 @@
                     40    0.21
 
                         Equation de la courbe de tendance : 1.2349*max^(-0.48)
-                    Coeff R¬≤ = 0.9999
+                    Coeff R≤ = 0.9999
                     */
 
                     if (max > (1.2349 * Math.pow(sizeOf, -0.48))) { normal = false; } else { normal = true }
                 } else {
                     /*     Pour sizeOf >= 40
-                    Les valeurs critiques du test sont d√©termin√©es par la formule :
+                    Les valeurs critiques du test sont dÈterminÈes par la formule :
                     1.36 * racine (N)
                     */
 
@@ -1236,7 +1236,7 @@
             var p_value = function (arry) {
                 /*     p-value */
                 /*     Principe : 
-                    Calcul de la p-value puis suivant la valeur, hypoth√®se rejet√©e ou non */
+                    Calcul de la p-value puis suivant la valeur, hypothËse rejetÈe ou non */
                 
                 /* Calcul p-value */
                 
@@ -1262,7 +1262,7 @@
     _ZeExtend({ graphs: {
         /* Pareto */
         pareto: {
-            /* Options g√©n√©riques */
+            /* Options gÈnÈriques */
             options: {
                 selection: { mode: 'y', fps: 30 },
                 bars: {
@@ -1329,7 +1329,7 @@
                 }
             },
 
-        /* Graph de r√©partion temporelle */
+        /* Graph de rÈpartion temporelle */
         histo: {
             init: function() { return _ZeLib.fn.clone(this); },
 
@@ -1358,8 +1358,8 @@
 
             draw: function(arg) {
                 /*
-                arg.data    :   tableau de donn√©es
-                arg.cols    :   colonnes √† utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par d√©faut { x: 0, y: 1 }]
+                arg.data    :   tableau de donnÈes
+                arg.cols    :   colonnes ‡ utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par dÈfaut { x: 0, y: 1 }]
                 arg.cont    :   id du container
                 */
 
@@ -1377,7 +1377,7 @@
                 var datArr_2 = new Array;
                 var datArr_3 = new Array;
 
-                /* Si tableau √† une dimension en parametre */
+                /* Si tableau ‡ une dimension en parametre */
                 if (_ZeLib.fn.getDimOfArray(arg.data) == 1) { for (i = 0; i < arg.data.length; i++) { arg.data[i] = [i, parseFloat(arg.data[i])]; } }
 
                 for_length = arg.data.length;
@@ -1456,7 +1456,7 @@
             }
         },
 
-        /* Graph de r√©partion de valeurs */
+        /* Graph de rÈpartion de valeurs */
         repart: {
 
             init: function() { return _ZeLib.fn.clone(this); },
@@ -1498,8 +1498,8 @@
                 //TODO : fix bug when multiple redraw
                 //TODO : add option to draw vertical line
                 /*
-                arg.data    :   tableau de donn√©es
-                arg.cols    :   colonnes √† utiliser, format : { x: 0 } [facultatif - par d√©faut { x: 0 }]
+                arg.data    :   tableau de donnÈes
+                arg.cols    :   colonnes ‡ utiliser, format : { x: 0 } [facultatif - par dÈfaut { x: 0 }]
                 arg.cont    :   id du container
                 arg.title    :     titre du graphique
                 arg.vertical:    array of values for vertical lines - format : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]
@@ -2039,7 +2039,7 @@
                         'Septembre',
                         'Octobre',
                         'Novembre',
-                        'D√©cembre'
+                        'DÈcembre'
                     ];
                     break;
                     
@@ -2077,7 +2077,7 @@
         - capitalize string
     */ ////
     _ZeExtend({ string: {
-        /* Supprime les espaces au d√©but et √† la fin d'une chaine */
+        /* Supprime les espaces au dÈbut et ‡ la fin d'une chaine */
         trim: function() {
             return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
         },
@@ -2237,7 +2237,7 @@
         },
 
         cookie: function (action, nom, value, exdays) {
-            /* Fonction de r√©cup√©ration du cookie */
+            /* Fonction de rÈcupÈration du cookie */
             var c_get = function (nom) {
                 var i, x, y, ARRcookies = document.cookie.split(";");
                 for (i = 0; i < ARRcookies.length; i++) {

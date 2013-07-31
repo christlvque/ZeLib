@@ -1,5 +1,5 @@
 
-  _ZeLib.dates = {
+	_ZeLib.dates = {
 		// JJMMAAAA				- 8
 		// JJ/MM/AAAA			- 10
 		// JJ/MM/AAAA HH:MM:SS	- 19
@@ -224,7 +224,7 @@
 			return this;
 		},
 
-		/* Retourne le numÃ©ro de semaine (ISO) */
+		/* Retourne le numéro de semaine (ISO) */
 		numSem: function(aaaa, mm, jj) {
 			var maDate;
 
@@ -282,7 +282,7 @@
 				'Septembre',
 				'Octobre',
 				'Novembre',
-				'DÃ©cembre'
+				'Décembre'
 			];
 
 			value = tab[value - 1];

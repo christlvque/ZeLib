@@ -22,7 +22,7 @@ _ZeLib.array = {
 
         distinctValues: function() {
             var tArray = arguments[0],
-  			dim = arguments[1],
+				dim = arguments[1],
 				size,
 				tOutput = new Array,
 				i;

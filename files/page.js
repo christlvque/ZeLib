@@ -1,5 +1,5 @@
 
-  _ZeLib.page = {
+	_ZeLib.page = {
 		saveFields: function() {
 			/* save all input fields of the current page */
 			var inp = $j('input[type!=button][type!=hidden]');
@@ -41,7 +41,7 @@
 				document.cookie = nom + "=" + c_value;
 			},
 
-			/* Fonction de rÃ©cupÃ©ration du cookie */
+			/* Fonction de récupération du cookie */
 			get: function (nom) {
 				var i, x, y, ARRcookies = document.cookie.split(";");
 				for (i = 0; i < ARRcookies.length; i++) {
