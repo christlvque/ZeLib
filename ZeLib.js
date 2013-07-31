@@ -33,6 +33,24 @@
     
     Changelog :
     
+    v. 1.2.20130731 [Maths Update]
+        - [Add] [Object] New process object -> contain all functions linked to indus process
+        - [Add] [Object] New mat object -> contain all functions linked to matrix
+        - [Add] [Math] Constants
+        - [Add] [Math] Log10 function
+        - [Add] [Math] sum of array values
+        - [Add] [Math] isFinite test
+        - [Add] [Math] Linear regression line calc
+        - [Add] [Math] Phi approx calc for normal law
+        - [Add] [Math] Normal law approx calc
+        - [Add] [Statistics] Quantile estimation calc - 3 methods
+        - [Add] [Statistics] Calc Normal inverse cumulative distribution
+        - [Add] [Statistics] Draw qq-plot graph
+        - [Add] [Graphs] simple plot function (x, y)
+        - [Add] [Arrays] merge two arrays in one + option for regression line
+        - [Remove] [Maths] Variance per cent specific function (deprecated in 1.1.a)
+        - [Remove] [Maths] 'loiNormale' function -> remapped to statistics function
+    
     v. 1.1.a
         - [Rewrite] Continue rewriting of library
         - [Add] Testing unit with qunit.js (see qunit.html)
@@ -244,7 +262,6 @@
             
  */
 
-
 /* Tiny fix for console */
 (function () {
 
@@ -268,6 +285,7 @@
         }
     }
 })();
+
 
 (function () {
     /* Plugins detection */
@@ -453,6 +471,12 @@
         /* Arrondi d'un nombre */
         roundNumber: function(rnum, rlength) {
             if (this.isNumeric(rnum) == false) { return rnum; }
+            var newnumber = Math.round(rnum * Math.pow(10, rlength)) / Math.pow(10, rlength);
+            return parseFloat(newnumber);
+        },
+        
+        numArr: function(rlength) {
+            var rnum = parseFloat(this.toString());
             var newnumber = Math.round(rnum * Math.pow(10, rlength)) / Math.pow(10, rlength);
             return parseFloat(newnumber);
         },
@@ -827,6 +851,21 @@
                 me[i] = [i, me[i]];
             }
             return me;
+        },
+        
+        merge: function (a, b) {
+            var length_a = a.length,
+                length_b = b.length,
+                arry = [],
+                i;
+            
+            if (length_a != length_b) { return false; }
+            
+            for (i=0;i<length_a;i++) {
+                arry.push([a[i], b[i]]);
+            }
+            
+            return arry;
         }
     }});
 
@@ -837,20 +876,7 @@
             NumbersOnly: true
         },
         
-        loiNormale: function(value, esp /* Esperance */, ect) {
-            var tempExp,
-                sqrt2pi = Math.sqrt(2 * Math.PI),
-                fOut = 0;
-
-            value = parseFloat(value);
-            esp = parseFloat(esp);
-            ect = parseFloat(ect);
-
-            tempExp = -(value - esp) * (value - esp) / (2 * ect * ect);
-            fOut = (1 / (ect * sqrt2pi)) * Math.exp(tempExp);
-
-            return fOut;
-        },
+        // loiNormale: _ZeLib.statistics.normale,
 
         min: function(aArray) {
             var i, min = parseFloat(aArray[0]);
@@ -929,19 +955,6 @@
                     min = this.min(aArray);
                 return parseFloat(100 * fVar / (max - min));
             }
-        },
-
-        /* Variance en % */
-        /* Remplacée par une option dans math.variance */
-        variance_percent: function(aArray) {
-            warnMe('Depreciated function \'math.variance_percent\'');
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une série (R&R)'); }
-            
-            var max = this.max(aArray),
-                min = this.min(aArray);
-            stDev = this.variance(aArray);
-
-            return parseFloat(100 * stDev / (max - min));
         },
         
         ecartType: function(aArray) {
@@ -1030,8 +1043,76 @@
 
             return this.avg(aArray) + nbS * this.ecartType(aArray);
         },
-
+        
+        /* Log10 calc */
+        log10: function (a) {
+            return Math.log(a) / Math.LN10;
+        }, 
+        
+        /* sum of array values */
+        // WARNING : No verification
+        sum: function (arr) {
+            var length, i, sum = 0;
+            
+            if (arguments[1] == undefined) {
+                length = arr.length;
+                for (i=0; i<length; i++) { sum += arr[i]; }
+            } else {
+                length = arr[arguments[1]].length;
+                for (i=0; i<length; i++) { sum += arr[arguments[1]][i]; }
+            }
+            
+            return sum;
+        }, 
+        
+        /* is finite test */
+        isFinite: function (x) {
+            return (!isNaN(x) && (x != Number.NEGATIVE_INFINITY) && (x != Number.POSITIVE_INFINITY));
+        },
+        
+        /* Linear regression linked to data in parameter */
+        regression: function (x, y) {
+            var i, length = x.length,
+                sx    = 0,
+                sy    = 0,
+                sxy   = 0,
+                sxsq  = 0,
+                xmean,
+                ymean,
+                alpha,
+                beta;
+                
+            for (i=0;i<length;i++) {
+                    // Computations used for regression line
+                    sx += x[i];
+                    sy += y[i];
+                    sxy += x[i]*y[i];
+                    sxsq += Math.pow(x[i],2);
+                }
+                
+                n = length;
+                xmean = sx/n;
+                ymean = sy/n;
+                beta  = ((n*sxy) - (sx*sy))/((n*sxsq)-(Math.pow(sx,2)));
+                alpha = ymean - (beta * xmean);
+                
+                return { alpha: alpha, beta: beta };
+        },
+        
+        floor: function (x) {
+            return Math.floor(x);
+        },
+        
+        ceiling: function (x) {
+            return Math.ceil(x);
+        },
+        
+        fractional_part: function (x) {
+            return x - this.floor(x);
+        }
     }});
+    
+    
     _ZeExtend({ math: {
         isNormal: function(aArray, test) {
             /*     Plusieurs test : 
@@ -1082,7 +1163,7 @@
                 max = 0;
                 for_length = aFreq[0].length;
                 for (i = 0; i < for_length; i++) {
-                    aFreq[2][i] = _ZeLib.math.loiNormale(
+                    aFreq[2][i] = _ZeLib.normale(
                                         aFreq[0][i],
                                         _ZeLib.math.avg(aFreq[0]),
                                         _ZeLib.math.ecartType(aFreq[0])) / for_length;
@@ -1570,6 +1651,83 @@
                 
             };
             
+        },
+        
+        /* Simple plot function */
+        /*  If x and y are vectors, plot(x, y) produces a scatterplot of y against x.
+            The same effect can be produced by supplying one argument (second form) as either a list containing two elements x and y or a two-column matrix.
+                
+            opts object : (default values)
+            - withReg: false
+        */
+        plot: function (x, y, container, opts) {
+            var dim_x = _ZeLib.fn.getDimOfArray(x),
+                dim_y = _ZeLib.fn.getDimOfArray(y),
+                data = [],
+                d2 = [],
+                length, // length of data
+                i,
+                min,
+                max,
+                alpha,
+                beta,
+                container = document.getElementById(container);
+                
+            // Merge opts and default
+            opts = _ZeLib.extend(
+            { // Default
+                withReg: false,
+                dataTitle: 'data_input',
+                withRegLabel: true
+            },
+            opts);
+            
+            if (!dim_y && dim_x == 1) {
+                warnMe('y serie is not defined -> can\'t plot any beautiful graph. Sorry.');
+                return false;
+            }
+            
+            if (dim_x == 2) { y = _ZeLib.array.getColumn(x, 1); x = _ZeLib.array.getColumn(x, 0); }
+            
+            var size_x = x.length,
+                size_y = y.length;
+                
+            if (size_x != size_y) {
+                warnMe('Series size mismatch. (x.length = ' + size_x + ', y.length = ' + size_y + ')');
+                return false;
+            }
+            
+            length = size_x;
+            data = _ZeLib.array.merge(x, y);
+            
+            if (opts.withReg) {
+            
+                var obj = _ZeLib.math.regression(x,y);
+                
+                alpha = obj.alpha;
+                beta  = obj.beta;
+                
+                max = _ZeLib.math.max(x);
+                min = _ZeLib.math.min(x);
+                for (n = min; n < max + 1; n++){
+                    d2.push([n, alpha + beta*n])
+                }  
+                
+                if (opts.withRegLabel) {
+                    graph = Flotr.draw(container,
+                        [{ data : data, label : opts.dataTitle, points : { show : true } },
+                         { data : d2, label : 'y = ' + alpha.toFixed(2) + ' + ' + beta.toFixed(2) + '*x' }]);
+                } else {
+                    graph = Flotr.draw(container,
+                        [{ data : data, label : opts.dataTitle, points : { show : true } },
+                         { data : d2 }]);
+                }
+                    
+            } else {
+                graph = Flotr.draw(container, [{ data : data, label : opts.dataTitle, points: { show: true }, lines: { show: false } }]);
+            }
+            
+            return graph;
         }
     }});
     
@@ -2181,6 +2339,330 @@
         table: _ZeLib.fn.tableau
     }});
     
+
+    /* MATH UPDATE BEGIN HERE */
+
+    // Add .process space
+    _ZeExtend({ process: { }});
+    
+    // Add .mat space dedicated to matricial calc
+    _ZeExtend({ mat: { }});
+    
+    /* Constants */
+    _ZeLib.ONE_SQRT_2PI     =   0.3989422804014327;
+    _ZeLib.LN_SQRT_2PI      =   0.9189385332046727417803297;
+    _ZeLib.LN_SQRT_PId2     =   0.225791352644727432363097614947;
+    _ZeLib.DBL_MIN          =   2.22507e-308;
+    _ZeLib.DBL_EPSILON      =   2.220446049250313e-16;
+    _ZeLib.SQRT_32          =   5.656854249492380195206754896838;
+    _ZeLib.TWO_PI           =   6.283185307179586;
+    _ZeLib.DBL_MIN_EXP      =   -999;
+    _ZeLib.SQRT_2dPI        =   0.79788456080287;
+    _ZeLib.LN_SQRT_PI       =   0.5723649429247;
+
+    /* Add .statistics space */
+    _ZeExtend({ statistics: {
+        /* approx phi calc */
+        /* from http://fr.wikipedia.org/wiki/Loi_normale#Approximation_de_la_fonction_de_r.C3.A9partition */
+        phi: function (x) {
+            var s = x,
+                t = 0,
+                b = x,
+                q = x*x,
+                i = 1;
+                
+            while(s != t) s=(t=s)+(b*=q/(i+=2));
+            return 0.5 + s*Math.exp(-0.5*q - 0.91893853320467274178);
+        },
+        
+        normalStdInverse: function (p) {
+            /*
+             * Lower tail quantile for standard normal distribution function.
+             *
+             * This function returns an approximation of the inverse cumulative
+             * standard normal distribution function.  I.e., given P, it returns
+             * an approximation to the X satisfying P = Pr{Z <= X} where Z is a
+             * random variable from the standard normal distribution.
+             *
+             * The algorithm uses a minimax approximation by rational functions
+             * and the result has a relative error whose absolute value is less
+             * than 1.15e-9.
+             *
+             * Author:      Peter John Acklam
+             * E-mail:      jacklam@math.uio.no
+             * WWW URL:     http://home.online.no/~pjacklam/notes/invnorm/
+             *
+             * Javascript implementation by Liorzou Etienne
+             * - Adapted from Dr. Thomas Ziegler's C implementation itself adapted from Peter's Perl version
+             * 
+             * Q: What about copyright?
+             * A: You can use the algorithm for whatever purpose you want, but 
+             * please show common courtesy and give credit where credit is due.
+             * 
+             * If you have any reclamation about this file (ie: normal.inverse.js file),
+             * please contact me.
+             * 
+             */
+
+            /* Coefficients in rational approximations. */
+            var a =
+                [
+                    -3.969683028665376e+01,
+                     2.209460984245205e+02,
+                    -2.759285104469687e+02,
+                     1.383577518672690e+02,
+                    -3.066479806614716e+01,
+                     2.506628277459239e+00
+                ], 
+                b =
+                [
+                    -5.447609879822406e+01,
+                     1.615858368580409e+02,
+                    -1.556989798598866e+02,
+                     6.680131188771972e+01,
+                    -1.328068155288572e+01
+                ],
+                c =
+                [
+                    -7.784894002430293e-03,
+                    -3.223964580411365e-01,
+                    -2.400758277161838e+00,
+                    -2.549732539343734e+00,
+                     4.374664141464968e+00,
+                     2.938163982698783e+00
+                ],
+                d =
+                [
+                    7.784695709041462e-03,
+                    3.224671290700398e-01,
+                    2.445134137142996e+00,
+                    3.754408661907416e+00
+                ],
+                LOW = 0.02425,
+                HIGH = 0.97575;
+
+
+            var ltqnorm = function (p) {
+                var q, r;
+
+                // errno = 0;
+
+                if (p < 0 || p > 1)
+                {
+                    // errno = EDOM;
+                    return 0.0;
+                }
+                else if (p == 0)
+                {
+                    // errno = ERANGE;
+                    return Number.NEGATIVE_INFINITY; /* minus "infinity" */;
+                }
+                else if (p == 1)
+                {
+                    // errno = ERANGE;
+                    return Number.POSITIVE_INFINITY; /* "infinity" */;
+                }
+                else if (p < LOW)
+                {
+                    /* Rational approximation for lower region */
+                    q = Math.sqrt(-2*Math.log(p));
+                    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                        ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+                }
+                else if (p > HIGH)
+                {
+                    /* Rational approximation for upper region */
+                    q  = Math.sqrt(-2*Math.log(1-p));
+                    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                        ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+                }
+                else
+                {
+                    /* Rational approximation for central region */
+                        q = p - 0.5;
+                        r = q*q;
+                    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+                        (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+                }
+            }
+            
+            return ltqnorm(p);
+        },        
+        
+        normale: function(x, esp, ec) {
+            var two_ecq = 2*ec*ec;
+            var x_mesp = x - esp;
+            return (1 / (ec * Math.sqrt(_ZeLib.TWO_PI))) * Math.exp(- x_mesp*x_mesp / two_ecq);
+        },
+        
+        /* 
+            Calc of q-quantiles from population p
+        */
+        quantile: function (population, q, method, withExtremities) {
+            var k,
+                p,
+                q_quantile = [],
+                m = [];
+            
+            // 1. Order population
+            population.sort(_ZeLib.array.sort.dim());
+            
+            // 2. Length of population
+            var N = population.length;
+            
+            // 3. Choice of method
+            if (!method || method < 1 || method > 9) { method = 1; }
+            
+            // Definitions of methods
+            m.push(function (p) { // Method 1
+                var h = N * p + 1/2;
+                
+                if (p==0) { return population[0]; }
+                
+                return population[_ZeLib.ceiling(h - 1/2) - 1];
+            });
+            
+            m.push(function (p) { // Method 2
+                // KO
+                var h = N * p + 1/2;
+                
+                if (p==0) { return population[0]; }
+                if (p==1) { return population[N - 1]; }
+                
+                return (population[_ZeLib.math.ceiling(h - 1/2) - 1] + population[_ZeLib.math.floor(h + 1/2) - 1]) / 2;
+            });
+            
+            m.push(function (p) { // Method 3
+                // KO
+                var h = N * p;
+                
+                if (p <= ((1/2)/N)) { return population[0]; }
+                
+                return population[_ZeLib.fn.roundNumber(h,0) - 1];
+            });
+            
+            if (q > 100) { q = 100; }
+            
+            for (k = 0; k <= q; k++) {
+                // Calc p
+                p = k / q;
+                q_quantile.push(m[method - 1](p));
+            }
+            
+            if (withExtremities != true) {
+                length = q_quantile.length;
+                var q_re = q_quantile;
+                q_quantile = [];
+                
+                for (k=1; k<length - 1; k++) { q_quantile.push(q_re[k]); }
+            }
+            
+            return q_quantile;
+        },
+        
+        quantile_normale: function (q, withExtremities) {
+            var i, out = [];
+            
+            for (i=0; i <= q; i++) {
+                out.push(this.normalStdInverse(i/q));
+            }
+            
+            if (withExtremities != true) {
+                var length = out.length,
+                    q_re = out;
+                    
+                out = [];
+                
+                for (k=1; k<length - 1; k++) { out.push(q_re[k]); }
+            }
+            
+            return out;
+        },
+        
+        qq_plot: function (opts) {
+            if (opts.data == undefined) { error('no data for qq-plot !'); return false; }
+            
+            var arry = opts.data;
+            
+            var ec = _ZeLib.math.ecartType(arry),
+                esp = _ZeLib.math.avg(arry),
+                length = arry.length,
+                arr_norm = [],
+                min = _ZeLib.math.min(arry),
+                max = _ZeLib.math.max(arry);
+            
+            
+            
+            // Merge opts and default
+            opts = _ZeLib.extend(
+            { // Default
+                data:           opts.data,
+                withReg:        true,
+                withRegLabel:   false,
+                id:             'qq-plot',
+                title:          'qq-plot',
+                nbPoints:       30
+            },
+            opts);
+            
+            
+            // Draw graph
+            _ZeLib.graphs.plot(
+                _ZeLib.statistics.quantile_normale(opts.nbPoints, false),
+                _ZeLib.statistics.quantile(arry, opts.nbPoints, 1, false), 
+                opts.id,
+                { 
+                    dataTitle: opts.title,
+                    withReg: opts.withReg,
+                    withRegLabel: opts.withRegLabel
+                }
+            );
+        }
+    }});
+    
+    // Remap maths function to root of ZeLib
+    // Tests
+    _ZeLib.isFinite         = _ZeLib.isFinite;
+     
+    // Values
+    _ZeLib.phi                  = _ZeLib.statistics.phi;
+    _ZeLib.normale              = _ZeLib.statistics.normale;
+    _ZeLib.normalStdInverse     = _ZeLib.statistics.normalStdInverse;
+    
+    // standard 
+    _ZeLib.log10            = _ZeLib.math.log10;
+    _ZeLib.min              = _ZeLib.math.min;
+    _ZeLib.max              = _ZeLib.math.max;
+    _ZeLib.floor            = _ZeLib.math.floor;
+    _ZeLib.ceiling          = _ZeLib.math.ceiling;
+    _ZeLib.fractional_part  = _ZeLib.math.fractional_part;
+        
+    // Data aggregate   
+    _ZeLib.sum              = _ZeLib.math.sum;
+    _ZeLib.avg              = _ZeLib.math.avg;
+    _ZeLib.mediane          = _ZeLib.math.mediane;
+    _ZeLib.variance         = _ZeLib.math.variance;
+    _ZeLib.ecartType        = _ZeLib.math.ecartType;
+    _ZeLib.regression       = _ZeLib.math.regression;
+    
+    // Normality    
+    _ZeLib.repart           = _ZeLib.math.repart;
+    _ZeLib.loiNormale       = _ZeLib.math.loiNormale;
+    _ZeLib.isNormal         = _ZeLib.math.isNormal;
+    // Statistics
+    _ZeLib.quantile         = _ZeLib.statistics.quantile;
+    
+    // Process  
+    _ZeLib.process.cpk      = _ZeLib.math.cpk;
+    _ZeLib.process.cp       = _ZeLib.math.cp;
+    _ZeLib.process.LCI      = _ZeLib.math.LCI;
+    _ZeLib.process.LCS      = _ZeLib.math.LCS;
+    
+    // Drawing functions
+    _ZeLib.plot             = _ZeLib.graphs.plot;
+    _ZeLib.qq_plot          = _ZeLib.statistics.qq_plot;
+    
+
     /* ////
         Add features to functions prototypes
         - Date         : dateAdd
@@ -2194,6 +2676,8 @@
     String.prototype.capitalize = _ZeLib.string.capitalize;
     Array.prototype.toNumeric = _ZeLib.array.toNumeric;
     Array.prototype.toIndexedList = _ZeLib.array.toIndexedList;
+    
+    Number.prototype.roundNumber = _ZeLib.fn.numArr;
     
     if (!window.z) { window.z = _ZeLib; }
 })();
