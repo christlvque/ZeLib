@@ -29,11 +29,20 @@
     - Flotr2 (http://www.humblesoftware.com/flotr2/) [ graphs ]
     [ should be optional but recommended : - TableSorter 2.0 (http://tablesorter.com), a jQuery plugin ]
     
+    Tested on :
+        - Chrome 24+,
+        - Firefox 19+,
+        - IE 7+ (graphs plot seems to fail permanentely) 
+            
     -------------
     
     Changelog :
     
-    v. 1.2.20130730 [Maths Update]
+    v. 1.2.20130801
+        - [Fix] [Math] Quantile calc - Issue with syntax in IE8
+        - [Update] Options for plot drawing
+    
+    v. 1.2.20130731 [Maths Update]
         - [Add] [Object] New process object -> contain all functions linked to indus process
         - [Add] [Object] New mat object -> contain all functions linked to matrix
         - [Add] [Math] Constants
@@ -431,7 +440,7 @@
             }
         },
 
-        /* Teste si le tableau est une sÈrie de nombres */
+        /* Teste si le tableau est une s√©rie de nombres */
         isSerie: function(aArray) {
             var dim, i;
 
@@ -442,7 +451,7 @@
             dim = this.getDimOfArray(aArray);
             if (dim != 1) { return false; }
 
-            /* Verification que tous les ÈlÈments soient numÈriques */
+            /* Verification que tous les √©l√©ments soient num√©riques */
             for_length = aArray.length;
             for (i = 0; i < for_length; i++) { if (this.isNumeric(aArray[i]) == false) { return false; } }
 
@@ -481,7 +490,7 @@
             return parseFloat(newnumber);
         },
 
-        /* Test de paritÈ */
+        /* Test de parit√© */
         isPair: function(iValue) {
             if ((iValue / 2) == parseInt(iValue / 2)) { return true; } else { return false; }
         },
@@ -546,7 +555,7 @@
                 for_length_j;
 
             var container = jQuery('#' + cID),
-                tHeader = undefined,    /* Textes des en-tÍtes */
+                tHeader = undefined,    /* Textes des en-t√™tes */
                 tClass = '',            /* Classes CSS du tableau */
                 headClass,              /* Classes CSS des headers */
                 table,                  /* tableau HTML */
@@ -572,7 +581,7 @@
                 }
             }
 
-            /* DÈtermine si le conteneur existe */
+            /* D√©termine si le conteneur existe */
             if (container == undefined) {
                 error('le div conteneur n\'existe pas !');
                 return false;
@@ -581,19 +590,19 @@
             /* vide le conteneur */
             container.html('');
 
-            /* DÈtermine si 'tID' est dÈj‡ utilisÈ */
+            /* D√©termine si 'tID' est d√©j√† utilis√© */
             if (jQuery('#' + tID).length > 0) {
-                logMe('l\'ID utilisÈ pour le tableau existe dÈj‡ !');
+                logMe('l\'ID utilis√© pour le tableau existe d√©j√† !');
                 return false;
             }
 
-            /* DÈtermine si 'tArray' est un tableau javascript */
+            /* D√©termine si 'tArray' est un tableau javascript */
             if (jQuery.isArray(tArray) == false) {
                 error('le parametre n\'est pas un tableau !');
                 return false;
             }
 
-            /* Determine si un tableau d'en-tete est passÈ en parametre */
+            /* Determine si un tableau d'en-tete est pass√© en parametre */
             if (tHeader) {
                 if (jQuery.isArray(tHeader) == false) {
                     error('le parametre d\'en-tete n\'est pas un tableau !');
@@ -601,13 +610,13 @@
                 }
             }
 
-            /* DÈfini la table */
+            /* D√©fini la table */
             container.append('<table id="' + tID + '"></table>');
             table = jQuery('#' + tID);
 
-            /* Si tHeader est dÈfini */
+            /* Si tHeader est d√©fini */
             if (tHeader != undefined) {
-                /* DÈfini le header */
+                /* D√©fini le header */
                 table.append('<thead></thead>');
                 tbHeader = table.children('thead');
 
@@ -628,7 +637,7 @@
                 }
             }
 
-            /* DÈfini le body */
+            /* D√©fini le body */
             table.append('<tbody></tbody>');
             tbBody = table.children('tbody');
             for_length = tArray.length;
@@ -899,7 +908,7 @@
             arr = aArray.slice();
 
             if (!_ZeLib.fn.isSerie(arr)) {
-                error('Le tableau n\'est pas une sÈrie (moyenne)');
+                error('Le tableau n\'est pas une s√©rie (moyenne)');
             }
 
             nbElem = arr.length;
@@ -916,13 +925,13 @@
             med,
             arr = aArray.slice();
 
-            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une sÈrie'); }
+            if (!_ZeLib.fn.isSerie(arr)) { error('Tableau n\'est pas une s√©rie'); }
 
             /* Tri du tableau */
             arr.sort(sort_numbers);
             nbElem = arr.length;
             /* logMe(arr); */
-            /* Calcul de la mÈdianes */
+            /* Calcul de la m√©dianes */
             if (_ZeLib.fn.isPair(nbElem)) {
                 med = this.avg([arr[(nbElem / 2) - 1], arr[((nbElem / 2) + 1) - 1]]);
             } else { med = arr[(nbElem - 1) / 2]; }
@@ -937,7 +946,7 @@
             fVar,
             fTmp;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
 
             nbElem = aArray.length;
             fMoy = parseFloat(this.avg(aArray));
@@ -961,7 +970,7 @@
             var fEcTp,
             fVar;
 
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (ecartType)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (ecartType)'); }
 
             fVar = this.variance(aArray);
             fEcTp = Math.sqrt(fVar);
@@ -1000,7 +1009,7 @@
         
         /* Calcul du CpK */
         cpk: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (CpK)'); }
             /*
             if (this.isNormal(aArray, 'kolgomorov')) {
             // */
@@ -1016,7 +1025,7 @@
 
         /* Calcul du Cp */
         cp: function(aArray, tolMin, tolMax) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une sÈrie (CpK)'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Le tableau n\'est pas une s√©rie (CpK)'); }
             /*
             if (this.isNormal(aArray, 'kolgomorov')) {
             // */
@@ -1028,17 +1037,17 @@
             // */
         },
 
-        /* Limites de controle ‡ nbS ecart-types */
+        /* Limites de controle √† nbS ecart-types */
         LCI: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.avg(aArray) - nbS * this.ecartType(aArray);
         },
 
-        /* Limites de controle ‡ nbS ecart-types */
+        /* Limites de controle √† nbS ecart-types */
         LCS: function(aArray, nbS) {
-            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une sÈrie'); }
+            if (!_ZeLib.fn.isSerie(aArray)) { error('Tableau n\'est pas une s√©rie'); }
             if (!_ZeLib.fn.isNumeric(nbS)) { error('Variable non numerique'); }
 
             return this.avg(aArray) + nbS * this.ecartType(aArray);
@@ -1117,26 +1126,26 @@
         isNormal: function(aArray, test) {
             /*     Plusieurs test : 
                 'kolgomorov'     : Test de Kolgomorov-Smirnov
-                'pvalue'        : Test par rapport ‡ la p-value
+                'pvalue'        : Test par rapport √† la p-value
             */
             
             var kolgomorov_smirnov = function (arry) {
             
                 /*    Test de Kolgomorov-Smirnov */
                 /*    Principe :
-                    Le test consiste ‡ mesurer l'Ècart
-                    entre la fonction de rÈpartition exacte (ici, la loi normale)
-                    et la fonction de rÈpartition empirique
+                    Le test consiste √† mesurer l'√©cart
+                    entre la fonction de r√©partition exacte (ici, la loi normale)
+                    et la fonction de r√©partition empirique
                         
-                        le test est validÈ si la valeur absolue de
-                    l'ecart max des frÈquences ne dÈpasse pas une certaine valeur
+                        le test est valid√© si la valeur absolue de
+                    l'ecart max des fr√©quences ne d√©passe pas une certaine valeur
                        
-                        On calcule donc les frÈquences
+                        On calcule donc les fr√©quences
                     d'apparition de toutes les valeurs distinctes
                 */
 
-                var aFreq = [[], [], []], /* Tableau des frÈquences */
-                    max, /* Ècart max */
+                var aFreq = [[], [], []], /* Tableau des fr√©quences */
+                    max, /* √©cart max */
                     sizeOf, /* Taille du tableau */
                     normal, /* contient la sortie */
                     pos, i;
@@ -1145,7 +1154,7 @@
 
                 sizeOf = arry.length
 
-                /* Calcul des frÈquences */
+                /* Calcul des fr√©quences */
                 for (i = 0; i < sizeOf; i++) {
                     pos = _ZeLib.fn.inArray(arry[i], aFreq[0]);
                     if (pos < 0) {
@@ -1159,7 +1168,7 @@
                 for_length = aFreq[1].length;
                 for (i = 0; i < for_length; i++) { aFreq[1][i] = aFreq[1][i] / sizeOf; }
 
-                /* Calcul des frÈquences thÈoriques */
+                /* Calcul des fr√©quences th√©oriques */
                 max = 0;
                 for_length = aFreq[0].length;
                 for (i = 0; i < for_length; i++) {
@@ -1175,8 +1184,8 @@
 
                 if (sizeOf < 41) {
                     /*    Table des valeurs critiques
-                    du test de Kolmogorov-Smirnov pour un Èchantillon
-                    pour une erreur ‡ 5%
+                    du test de Kolmogorov-Smirnov pour un √©chantillon
+                    pour une erreur √† 5%
                     N     Valeur
                     5    0.565
                     6    0.52
@@ -1216,13 +1225,13 @@
                     40    0.21
 
                         Equation de la courbe de tendance : 1.2349*max^(-0.48)
-                    Coeff R≤ = 0.9999
+                    Coeff R¬≤ = 0.9999
                     */
 
                     if (max > (1.2349 * Math.pow(sizeOf, -0.48))) { normal = false; } else { normal = true }
                 } else {
                     /*     Pour sizeOf >= 40
-                    Les valeurs critiques du test sont dÈterminÈes par la formule :
+                    Les valeurs critiques du test sont d√©termin√©es par la formule :
                     1.36 * racine (N)
                     */
 
@@ -1236,7 +1245,7 @@
             var p_value = function (arry) {
                 /*     p-value */
                 /*     Principe : 
-                    Calcul de la p-value puis suivant la valeur, hypothËse rejetÈe ou non */
+                    Calcul de la p-value puis suivant la valeur, hypoth√®se rejet√©e ou non */
                 
                 /* Calcul p-value */
                 
@@ -1262,7 +1271,7 @@
     _ZeExtend({ graphs: {
         /* Pareto */
         pareto: {
-            /* Options gÈnÈriques */
+            /* Options g√©n√©riques */
             options: {
                 selection: { mode: 'y', fps: 30 },
                 bars: {
@@ -1329,7 +1338,7 @@
                 }
             },
 
-        /* Graph de rÈpartion temporelle */
+        /* Graph de r√©partion temporelle */
         histo: {
             init: function() { return _ZeLib.fn.clone(this); },
 
@@ -1358,8 +1367,8 @@
 
             draw: function(arg) {
                 /*
-                arg.data    :   tableau de donnÈes
-                arg.cols    :   colonnes ‡ utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par dÈfaut { x: 0, y: 1 }]
+                arg.data    :   tableau de donn√©es
+                arg.cols    :   colonnes √† utiliser, format : { x: 2, y: 0 [, y2: 3] } [facultatif - par d√©faut { x: 0, y: 1 }]
                 arg.cont    :   id du container
                 */
 
@@ -1377,7 +1386,7 @@
                 var datArr_2 = new Array;
                 var datArr_3 = new Array;
 
-                /* Si tableau ‡ une dimension en parametre */
+                /* Si tableau √† une dimension en parametre */
                 if (_ZeLib.fn.getDimOfArray(arg.data) == 1) { for (i = 0; i < arg.data.length; i++) { arg.data[i] = [i, parseFloat(arg.data[i])]; } }
 
                 for_length = arg.data.length;
@@ -1456,7 +1465,7 @@
             }
         },
 
-        /* Graph de rÈpartion de valeurs */
+        /* Graph de r√©partion de valeurs */
         repart: {
 
             init: function() { return _ZeLib.fn.clone(this); },
@@ -1498,8 +1507,8 @@
                 //TODO : fix bug when multiple redraw
                 //TODO : add option to draw vertical line
                 /*
-                arg.data    :   tableau de donnÈes
-                arg.cols    :   colonnes ‡ utiliser, format : { x: 0 } [facultatif - par dÈfaut { x: 0 }]
+                arg.data    :   tableau de donn√©es
+                arg.cols    :   colonnes √† utiliser, format : { x: 0 } [facultatif - par d√©faut { x: 0 }]
                 arg.cont    :   id du container
                 arg.title    :     titre du graphique
                 arg.vertical:    array of values for vertical lines - format : [{data: val1, name:'nameOfLine'} (, {data: val2, name:'otherNameOfLine'}  (, ...))]
@@ -1678,7 +1687,13 @@
             { // Default
                 withReg: false,
                 dataTitle: 'data_input',
-                withRegLabel: true
+                withRegLabel: true,
+                x: {
+                    scaling: 'linear'
+                },
+                y: {
+                    scaling: 'linear'
+                }
             },
             opts);
             
@@ -1716,11 +1731,19 @@
                 if (opts.withRegLabel) {
                     graph = Flotr.draw(container,
                         [{ data : data, label : opts.dataTitle, points : { show : true } },
-                         { data : d2, label : 'y = ' + alpha.toFixed(2) + ' + ' + beta.toFixed(2) + '*x' }]);
+                         { data : d2, label : 'y = ' + alpha.toFixed(2) + ' + ' + beta.toFixed(2) + '*x' }],
+                        {
+                            xaxis: { scaling: opts.x.scaling },
+                            yaxis: { scaling: opts.y.scaling }
+                        });
                 } else {
                     graph = Flotr.draw(container,
                         [{ data : data, label : opts.dataTitle, points : { show : true } },
-                         { data : d2 }]);
+                         { data : d2 }],
+                        {
+                            xaxis: { scaling: opts.x.scaling },
+                            yaxis: { scaling: opts.y.scaling }
+                        });
                 }
                     
             } else {
@@ -2039,7 +2062,7 @@
                         'Septembre',
                         'Octobre',
                         'Novembre',
-                        'DÈcembre'
+                        'D√©cembre'
                     ];
                     break;
                     
@@ -2077,7 +2100,7 @@
         - capitalize string
     */ ////
     _ZeExtend({ string: {
-        /* Supprime les espaces au dÈbut et ‡ la fin d'une chaine */
+        /* Supprime les espaces au d√©but et √† la fin d'une chaine */
         trim: function() {
             return this.replace(/^\s+/g, '').replace(/\s+$/g, '');
         },
@@ -2237,7 +2260,7 @@
         },
 
         cookie: function (action, nom, value, exdays) {
-            /* Fonction de rÈcupÈration du cookie */
+            /* Fonction de r√©cup√©ration du cookie */
             var c_get = function (nom) {
                 var i, x, y, ARRcookies = document.cookie.split(";");
                 for (i = 0; i < ARRcookies.length; i++) {
@@ -2502,7 +2525,8 @@
             var k,
                 p,
                 q_quantile = [],
-                m = [];
+                m = [],
+                q_re;
             
             // 1. Order population
             population.sort(_ZeLib.array.sort.dim());
@@ -2550,11 +2574,11 @@
             }
             
             if (withExtremities != true) {
-                length = q_quantile.length;
-                var q_re = q_quantile;
+                _length = q_quantile.length;
+                q_re = q_quantile;
                 q_quantile = [];
                 
-                for (k=1; k<length - 1; k++) { q_quantile.push(q_re[k]); }
+                for (k=1; k<_length - 1; k++) { q_quantile.push(q_re[k]); }
             }
             
             return q_quantile;
@@ -2601,7 +2625,14 @@
                 withRegLabel:   false,
                 id:             'qq-plot',
                 title:          'qq-plot',
-                nbPoints:       30
+                nbPoints:       30,
+                x: {
+                    scaling: 'linear'
+                },
+                y: {
+                    scaling: 'linear'
+                }, 
+                quantileMethod: 1
             },
             opts);
             
@@ -2609,12 +2640,14 @@
             // Draw graph
             _ZeLib.graphs.plot(
                 _ZeLib.statistics.quantile_normale(opts.nbPoints, false),
-                _ZeLib.statistics.quantile(arry, opts.nbPoints, 1, false), 
+                _ZeLib.statistics.quantile(arry, opts.nbPoints, opts.quantileMethod, false), 
                 opts.id,
                 { 
                     dataTitle: opts.title,
                     withReg: opts.withReg,
-                    withRegLabel: opts.withRegLabel
+                    withRegLabel: opts.withRegLabel,
+                    x: { scaling: opts.x.scaling },
+                    y: { scaling: opts.y.scaling }
                 }
             );
         }
